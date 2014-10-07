@@ -1,0 +1,11 @@
+{
+  "name":"yubico/u2flib-server",
+  "description":"Library for U2F implementation",
+  "homepage":"https://developers.yubico.com/php-u2flib-server",
+  "license":"BSD-2-Clause",
+  "autoload": {
+    "psr-4": {
+      "u2flib_server":"src/"
+    }
+  }
+}
