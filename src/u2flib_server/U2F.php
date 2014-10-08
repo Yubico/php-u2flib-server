@@ -13,9 +13,9 @@ use \phpecc\Signature;
 use \phpecc\Point;
 
 define ('USE_EXT', 'GMP');
+define ('U2F_VERSION', 'U2F_V2');
 
 class U2F {
-  private static $version = "U2F_V2";
   private $appId;
 
   public function __construct($appId) {
@@ -24,7 +24,7 @@ class U2F {
 
   public function getRegisterData($keyHandles = Null) {
     $challenge = U2F::base64u_encode(openssl_random_pseudo_bytes(32));
-    $request = new RegisterRequest(U2F::$version, $challenge, $this->appId);
+    $request = new RegisterRequest($challenge, $this->appId);
     return json_encode($request, JSON_UNESCAPED_SLASHES);
   }
 
@@ -73,7 +73,16 @@ class U2F {
   }
 
   public function getAuthenticateData($registrations) {
-
+    $sigs = [];
+    foreach ($registrations as $registration) {
+      $reg = json_decode($registration);
+      $sig = new SignRequest();
+      $sig->appId = $this->appId;
+      $sig->keyHandle = U2F::base64u_encode(hex2bin($reg->keyHandle));
+      $sig->challenge = U2F::base64u_encode(openssl_random_pseudo_bytes(32));
+      $sigs[] = json_encode($sig, JSON_UNESCAPED_SLASHES);
+    }
+    return $sigs;
   }
 
   public function doAuthenticate() {
@@ -109,29 +118,21 @@ class U2F {
 }
 
 class RegisterRequest {
-  public $version;
+  public $version = U2F_VERSION;
   public $challenge;
   public $appId;
 
-  public function __construct($version, $challenge, $appId) {
-    $this->version = $version;
+  public function __construct($challenge, $appId) {
     $this->challenge = $challenge;
     $this->appId = $appId;
   }
 }
 
 class SignRequest {
-  public $version;
+  public $version = U2F_VERSION;
   public $challenge;
   public $keyHandle;
   public $appId;
-
-  public function __construct($version, $challenge, $keyHandle, $appId) {
-    $this->version = $version;
-    $this->challenge = $challenge;
-    $this->keyHandle = $keyHandle;
-    $this->appId = $appId;
-  }
 }
 
 class Registration {
