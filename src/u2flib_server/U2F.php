@@ -43,7 +43,8 @@ class U2F {
     $registration = new Registration();
     $registration->publicKey = bin2hex(substr($rawReg, 1, 65));
     $khLen = $regData[67];
-    $registration->keyHandle = bin2hex(substr($rawReg, 67, $khLen));
+    $kh = substr($rawReg, 67, $khLen);
+    $registration->keyHandle = U2F::base64u_encode($kh);
 
     $certLen = 4;
     $certLen += ($regData[67 + $khLen + 3] << 8);
@@ -61,7 +62,7 @@ class U2F {
     hash_update($sha256, chr(0));
     hash_update($sha256, hash('sha256', $req->appId, true));
     hash_update($sha256, hash('sha256', $clientData, true));
-    hash_update($sha256, hex2bin($registration->keyHandle));
+    hash_update($sha256, $kh);
     hash_update($sha256, hex2bin($registration->publicKey));
     $hash = hash_final($sha256);
 
@@ -78,15 +79,54 @@ class U2F {
       $reg = json_decode($registration);
       $sig = new SignRequest();
       $sig->appId = $this->appId;
-      $sig->keyHandle = U2F::base64u_encode(hex2bin($reg->keyHandle));
+      $sig->keyHandle = $reg->keyHandle;
       $sig->challenge = U2F::base64u_encode(openssl_random_pseudo_bytes(32));
       $sigs[] = json_encode($sig, JSON_UNESCAPED_SLASHES);
     }
     return $sigs;
   }
 
-  public function doAuthenticate() {
+  public function doAuthenticate($requests, $registrations, $data) {
+    $response = json_decode($data);
+    $req = null;
+    $reg = null;
+    foreach ($requests as $request) {
+      $req = json_decode($request);
+      if($req->keyHandle === $response->keyHandle) {
+        break;
+      }
+      $req = null;
+    }
+    if($req === null) {
+      return null;
+    }
+    foreach ($registrations as $registration) {
+      $reg = json_decode($registration);
+      if($reg->keyHandle === $response->keyHandle) {
+        break;
+      }
+      $reg = null;
+    }
+    if($reg === null) {
+      return null;
+    }
 
+    $key = U2F::pubkey_decode($reg->publicKey);
+    $signData = U2F::base64u_decode($response->signatureData);
+    $clientData = U2f::base64u_decode($response->clientData);
+    $sha256 = hash_init('sha256');
+    hash_update($sha256, hash('sha256', $req->appId, true));
+    hash_update($sha256, substr($signData, 0, 5));
+    hash_update($sha256, hash('sha256', $clientData, true));
+    $hash = hash_final($sha256);
+    $sig = U2f::sig_decode(substr($signData, 5));
+    if($key->verifies(gmp_strval(gmp_init($hash, 16), 10), $sig) === true) {
+      $ctr = unpack("C*", substr($signData, 1, 4));
+      $counter = ($ctr[1] << 24) + ($ctr[2] << 16) + ($ctr[3] << 8) + ($ctr[4]);
+      return $counter;
+    } else {
+      return null;
+    }
   }
 
   private static function base64u_encode($data) {
