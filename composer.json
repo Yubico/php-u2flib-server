@@ -4,10 +4,11 @@
   "homepage":"https://developers.yubico.com/php-u2flib-server",
   "license":"BSD-2-Clause",
   "require": {
+    "php":">=5.4",
     "phpseclib/phpseclib":"0.3.*",
     "ext-mcrypt":"*",
     "ext-gmp":"*",
-    "xqus/phpecc" : "dev-master"
+    "xqus/phpecc":"dev-master"
   },
   "autoload": {
     "classmap": ["src/"]

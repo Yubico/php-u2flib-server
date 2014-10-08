@@ -34,18 +34,24 @@ class U2F {
     $regData = unpack('C*', $rawReg);
     $clientData = U2F::base64u_decode($response->clientData);
     $req = json_decode($request);
+    $cli = json_decode($clientData);
+
+    if($cli->challenge !== $req->challenge) {
+      return null;
+    }
 
     $registration = new Registration();
-    $registration->publicKey = substr($rawReg, 1, 65);
+    $registration->publicKey = bin2hex(substr($rawReg, 1, 65));
     $khLen = $regData[67];
-    $registration->keyHandle = substr($rawReg, 67, $khLen);
+    $registration->keyHandle = bin2hex(substr($rawReg, 67, $khLen));
 
     $certLen = 4;
     $certLen += ($regData[67 + $khLen + 3] << 8);
     $certLen += $regData[67 + $khLen + 4];
 
     $x509 = new File_X509();
-    $cert = $x509->loadX509(substr($rawReg, 67 + $khLen, $certLen));
+    $registration->certificate = bin2hex(substr($rawReg, 67 + $khLen, $certLen));
+    $cert = $x509->loadX509(hex2bin($registration->certificate));
     $rawKey = base64_decode($cert['tbsCertificate']['subjectPublicKeyInfo']['subjectPublicKey']);
     $signing_key = U2F::pubkey_decode(substr(bin2hex($rawKey), 2));
     $signature = substr($rawReg, 67 + $khLen + $certLen);
@@ -55,18 +61,18 @@ class U2F {
     hash_update($sha256, chr(0));
     hash_update($sha256, hash('sha256', $req->appId, true));
     hash_update($sha256, hash('sha256', $clientData, true));
-    hash_update($sha256, $registration->keyHandle);
-    hash_update($sha256, $registration->publicKey);
+    hash_update($sha256, hex2bin($registration->keyHandle));
+    hash_update($sha256, hex2bin($registration->publicKey));
     $hash = hash_final($sha256);
 
     if($signing_key->verifies(gmp_strval(gmp_init($hash, 16), 10), $sig) == true) {
-      return $registration;
+      return json_encode($registration);
     } else {
       return null;
     }
   }
 
-  public function getAuthenticateData($keyHandles) {
+  public function getAuthenticateData($registrations) {
 
   }
 
