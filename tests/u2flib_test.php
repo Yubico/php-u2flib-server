@@ -1,0 +1,20 @@
+<?php
+
+class U2FTest extends \PHPUnit_Framework_TestCase {
+
+  private $u2f;
+
+  public function setUp() {
+    $this->u2f = new \u2flib_server\U2F("http://demo.yubico.com");
+  }
+
+  public function testGetRegisterData() {
+    print $this->u2f->getRegisterData();
+  }
+
+  public function testDoRegister() {
+    print $this->u2f->doRegister('{"version":"U2F_V2","challenge":"XxTmpa3AWwEH4p-ou9XhjFNKUDqClMt7yqLAQ4FiVVY","appId":"http://demo.yubico.com"}', '{ "registrationData": "BQQiOmv2pl08VYwy5DmjydLZes-cUQcs2IEbOZVTn2LGW8IgmILfhR_5RWQ2Wcln5xZ7MD_3yPOZlw-ihfe6t15OQKjAd4dE4j0vDRk5OzNP84HEO0QkfSgaaO_Pmp7A1MLfq5VzpaKQaAAbu1Zm-vEZXoAPf2Pq7tCfYF98K2yQxZIwggLiMIHLAgEBMA0GCSqGSIb3DQEBCwUAMB0xGzAZBgNVBAMTEll1YmljbyBVMkYgVGVzdCBDQTAeFw0xNDA1MTUxMjU4NTRaFw0xNDA2MTQxMjU4NTRaMB0xGzAZBgNVBAMTEll1YmljbyBVMkYgVGVzdCBFRTBZMBMGByqGSM49AgEGCCqGSM49AwEHA0IABNsK2_Uhx1zOY9ym4eglBg2U5idUGU-dJK8mGr6tmUQflaNxkQo6IOc-kV4T6L44BXrVeqN-dpCPr-KKlLYw650wDQYJKoZIhvcNAQELBQADggIBAJVAa1Bhfa2Eo7TriA_jMA8togoA2SUE7nL6Z99YUQ8LRwKcPkEpSpOsKYWJLaR6gTIoV3EB76hCiBaWN5HV3-CPyTyNsM2JcILsedPGeHMpMuWrbL1Wn9VFkc7B3Y1k3OmcH1480q9RpYIYr-A35zKedgV3AnvmJKAxVhv9GcVx0_CewHMFTryFuFOe78W8nFajutknarupekDXR4tVcmvj_ihJcST0j_Qggeo4_3wKT98CgjmBgjvKCd3Kqg8n9aSDVWyaOZsVOhZj3Fv5rFu895--D4qiPDETozJIyliH-HugoQpqYJaTX10mnmMdCa6aQeW9CEf-5QmbIP0S4uZAf7pKYTNmDQ5z27DVopqaFw00MIVqQkae_zSPX4dsNeeoTTXrwUGqitLaGap5ol81LKD9JdP3nSUYLfq0vLsHNDyNgb306TfbOenRRVsgQS8tJyLcknSKktWD_Qn7E5vjOXprXPrmdp7g5OPvrbz9QkWa1JTRfo2n2AXV02LPFc-UfR9bWCBEIJBxvmbpmqt0MnBTHWnth2b0CU_KJTDCY3kAPLGbOT8A4KiI73pRW-e9SWTaQXskw3Ei_dHRILM_l9OXsqoYHJ4Dd3tbfvmjoNYggSw4j50l3unI9d1qR5xlBFpW5sLr8gKX4bnY4SR2nyNiOQNLyPc0B0nW502aMEYCIQD6P0KVXpbQGzHRc_bhXKBLlVh53ecBPfaxSbGrfkG6OAIhAIt1XWxeClPc8OJTqgMeA8yVbZgsqfnQ6p2ZHoAmruAx", "clientData": "eyAiY2hhbGxlbmdlIjogIlh4VG1wYTNBV3dFSDRwLW91OVhoakZOS1VEcUNsTXQ3eXFMQVE0RmlWVlkiLCAib3JpZ2luIjogImh0dHA6XC9cL2RlbW8ueXViaWNvLmNvbSIsICJ0eXAiOiAibmF2aWdhdG9yLmlkLmZpbmlzaEVucm9sbG1lbnQiIH0=" }');
+  }
+}
+
+?>

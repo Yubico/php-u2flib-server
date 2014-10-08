@@ -3,9 +3,20 @@
   "description":"Library for U2F implementation",
   "homepage":"https://developers.yubico.com/php-u2flib-server",
   "license":"BSD-2-Clause",
-  "autoload": {
-    "psr-4": {
-      "u2flib_server":"src/"
+  "repositories": [
+    {
+      "type":"git",
+      "url":"https://github.com/jaytaph/danter-php-ecc"
     }
+  ],
+  "require": {
+    "phpseclib/phpseclib":"0.3.*",
+    "ext-mcrypt":"*",
+    "ext-gmp":"*",
+    "xqus/phpecc" : "dev-master"
+  },
+  "autoload": {
+    "classmap": ["src/"]
   }
 }
+
