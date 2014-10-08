@@ -10,11 +10,11 @@ use \File_ASN1;
 use \phpecc\PublicKey;
 use \phpecc\NISTcurve;
 use \phpecc\Signature;
+use \phpecc\Point;
 
 define ('USE_EXT', 'GMP');
 
 class U2F {
-
   private static $version = "U2F_V2";
   private $appId;
 
@@ -47,7 +47,7 @@ class U2F {
     $x509 = new File_X509();
     $cert = $x509->loadX509(substr($rawReg, 67 + $khLen, $certLen));
     $rawKey = base64_decode($cert['tbsCertificate']['subjectPublicKeyInfo']['subjectPublicKey']);
-    $signing_key = PublicKey::decode(NISTcurve::generator_256(), substr(bin2hex($rawKey), 2));
+    $signing_key = U2F::pubkey_decode(substr(bin2hex($rawKey), 2));
     $signature = substr($rawReg, 67 + $khLen + $certLen);
     $sig = U2F::sig_decode($signature);
 
@@ -89,6 +89,16 @@ class U2F {
     $gmpR = gmp_strval(gmp_init($r->toHex(), 16), 10);
     $gmpS = gmp_strval(gmp_init($s->toHex(), 16), 10);
     return new Signature($gmpR, $gmpS);
+  }
+
+  private static function pubkey_decode($key) {
+    if(substr($key, 0, 2) != "04") {
+      throw new ErrorException("Key must be a HEX string of a public ECC key");
+    }
+    $curve = NISTcurve::generator_256();
+    $x = gmp_strval(gmp_init(substr($key, 2, 64), 16), 10);
+    $y = gmp_strval(gmp_init(substr($key, 2+64, 64), 16), 10);
+    return new PublicKey($curve, new Point($curve->getCurve(), $x, $y));
   }
 }
 
