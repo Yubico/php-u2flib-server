@@ -1,0 +1,29 @@
+php-u2flib-server
+-----------------
+
+Serverside U2F library for PHP. Provides functionality for registering
+tokens and authentication with said tokens.
+
+License
+-------
+
+The project is licensed under a BSD license.  See the file COPYING for
+exact wording.  For any copyright year range specified as YYYY-ZZZZ in
+this package note that the range specifies every single year in that
+closed interval.
+
+Dependencies
+------------
+
+Dependencies are managed with composer, see https://getcomposer.org/
+for information about obtaining that.
+To setup dependencies when composer is availabel, run:
+
+ $ composer.phar install
+
+Tests
+-----
+
+To run the testsuite phpunit is required, to run it:
+
+ $ phpunit
