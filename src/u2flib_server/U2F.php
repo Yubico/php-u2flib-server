@@ -109,9 +109,9 @@ class U2F {
       $sig->appId = $this->appId;
       $sig->keyHandle = $reg->keyHandle;
       $sig->challenge = U2F::base64u_encode(openssl_random_pseudo_bytes(32));
-      $sigs[] = json_encode($sig);
+      $sigs[] = $sig;
     }
-    return $sigs;
+    return json_encode($sigs);
   }
 
   public function doAuthenticate($requests, $registrations, $data) {
