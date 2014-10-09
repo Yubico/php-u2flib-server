@@ -44,16 +44,25 @@ $u2f = new u2flib_server\U2F($scheme . $_SERVER['HTTP_HOST']);
 <?php
 if($_SERVER['REQUEST_METHOD'] === 'POST') {
     if(isset($_POST['startRegister'])) {
-        $data = $u2f->getRegisterData();
+        $regs = array();
+        if($_POST['registrations']) {
+            $regs[] = $_POST['registrations'];
+        }
+        list($data, $reqs) = $u2f->getRegisterData($regs);
         echo "var request = $data;\n";
+        echo "var signs = $reqs;\n";
 ?>
         setTimeout(function() {
             console.log("Register: ", request);
-            u2f.register([request], [], function(data) {
+            u2f.register([request], signs, function(data) {
                 var form = document.getElementById('form');
                 var reg = document.getElementById('doRegister');
                 var req = document.getElementById('request');
                 console.log("Register callback", data);
+                if(data.errorCode) {
+                    alert("registration failed with errror: " + data.errorCode);
+                    return;
+                }
                 reg.value=JSON.stringify(data);
                 req.value=JSON.stringify(request);
                 form.submit();

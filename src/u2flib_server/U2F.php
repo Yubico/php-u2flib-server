@@ -48,10 +48,11 @@ class U2F {
     $this->appId = $appId;
   }
 
-  public function getRegisterData($keyHandles = Null) {
+  public function getRegisterData($keyHandles = array()) {
     $challenge = U2F::base64u_encode(openssl_random_pseudo_bytes(32));
     $request = new RegisterRequest($challenge, $this->appId);
-    return json_encode($request);
+    $signs = $this->getAuthenticateData($keyHandles);
+    return array(json_encode($request), $signs);
   }
 
   public function doRegister($request, $data) {
