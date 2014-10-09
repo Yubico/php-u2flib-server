@@ -1,11 +1,13 @@
 <?php
 
+require_once('vendor/autoload.php');
+
 class U2FTest extends \PHPUnit_Framework_TestCase {
 
   private $u2f;
 
   public function setUp() {
-    $this->u2f = new \u2flib_server\U2F("http://demo.example.com");
+    $this->u2f = new u2flib_server\U2F("http://demo.example.com");
   }
 
   public function testGetRegisterData() {
