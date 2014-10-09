@@ -86,6 +86,7 @@ if($_SERVER['REQUEST_METHOD'] === 'POST') {
                 var regs = document.getElementById('registrations');
                 console.log("Authenticate callback", data);
                 reg.value=JSON.stringify(data);
+                // FIXME: this only sends the first request back..
                 req.value=JSON.stringify(request[0]);
                 regs.value=JSON.stringify(registrations);
                 form.submit();
