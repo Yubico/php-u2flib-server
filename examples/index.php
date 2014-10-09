@@ -41,12 +41,35 @@ $u2f = new u2flib_server\U2F($scheme . $_SERVER['HTTP_HOST']);
 <script src="chrome-extension://pfboblefjcgdjicmnffhdgionmgcdmne/u2f-api.js"></script>
 
 <script>
+
+function addRegistration(reg) {
+    var existing = localStorage.getItem('u2fregistration');
+    var data = null;
+    if(existing) {
+        data = JSON.parse(existing);
+        if(Array.isArray(data)) {
+            data.push(JSON.parse(reg));
+        } else {
+            data = null;
+        }
+    }
+    if(data == null) {
+        data = [JSON.parse(reg)];
+    }
+    localStorage.setItem('u2fregistration', JSON.stringify(data));
+}
+
 <?php
+
 if($_SERVER['REQUEST_METHOD'] === 'POST') {
     if(isset($_POST['startRegister'])) {
         $regs = array();
         if($_POST['registrations']) {
-            $regs[] = $_POST['registrations'];
+            $registrations = json_decode($_POST['registrations']);
+            foreach ($registrations as $reg) {
+                $registration = json_encode($reg);
+                $regs[] = $registration;
+            }
         }
         list($data, $reqs) = $u2f->getRegisterData($regs);
         echo "var request = $data;\n";
@@ -74,7 +97,7 @@ if($_SERVER['REQUEST_METHOD'] === 'POST') {
         echo "var registration = '$data';\n";
 ?>
         if(registration != "") {
-            localStorage.setItem('u2fregistration', registration);
+            addRegistration(registration);
             alert("registration successful!");
         } else {
             alert("registration failed!");
@@ -134,7 +157,7 @@ if(reg == null) {
     auth.disabled = true;
 } else {
     var regs = document.getElementById('registrations');
-    regs.value = [reg];
+    regs.value = reg;
     console.log("set the registrations to : ", reg);
 }
 </script>
