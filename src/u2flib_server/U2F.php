@@ -7,18 +7,19 @@ namespace u2flib_server;
 
 use \File_X509;
 use \File_ASN1;
-use \phpecc\PublicKey;
-use \phpecc\NISTcurve;
-use \phpecc\Signature;
-use \phpecc\Point;
+use \Mdanter\Ecc\ModuleConfig;
+use \Mdanter\Ecc\PublicKey;
+use \Mdanter\Ecc\NISTcurve;
+use \Mdanter\Ecc\Signature;
+use \Mdanter\Ecc\Point;
 
-define ('USE_EXT', 'GMP');
 define ('U2F_VERSION', 'U2F_V2');
 
 class U2F {
   private $appId;
 
   public function __construct($appId) {
+    ModuleConfig::useGmp();
     $this->appId = $appId;
   }
 
@@ -152,7 +153,7 @@ class U2F {
     if(substr($key, 0, 2) != "04") {
       throw new \Exception("Key must be a HEX string of a public ECC key");
     }
-    $curve = NISTcurve::generator_256();
+    $curve = NISTcurve::generator256();
     $x = gmp_strval(gmp_init(substr($key, 2, 64), 16), 10);
     $y = gmp_strval(gmp_init(substr($key, 2+64, 64), 16), 10);
     return new PublicKey($curve, new Point($curve->getCurve(), $x, $y));
