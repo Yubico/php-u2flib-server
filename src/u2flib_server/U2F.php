@@ -167,8 +167,9 @@ class U2F {
 
   private static function sig_decode($signature) {
     $asn1 = new File_ASN1();
-    $r = $asn1->decodeBER($signature)[0]['content'][0]['content'];
-    $s = $asn1->decodeBER($signature)[0]['content'][1]['content'];
+    $sig = $asn1->decodeBER($signature);
+    $r = $sig[0]['content'][0]['content'];
+    $s = $sig[0]['content'][1]['content'];
     $gmpR = gmp_strval(gmp_init($r->toHex(), 16), 10);
     $gmpS = gmp_strval(gmp_init($s->toHex(), 16), 10);
     return new Signature($gmpR, $gmpS);
