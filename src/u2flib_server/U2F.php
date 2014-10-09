@@ -42,7 +42,7 @@ class U2F {
 
     $registration = new Registration();
     $pubKey = substr($rawReg, 1, 65);
-    $registration->publicKey = bin2hex($pubKey);
+    $registration->publicKey = base64_encode($pubKey);
     $khLen = $regData[67];
     $kh = substr($rawReg, 67, $khLen);
     $registration->keyHandle = U2F::base64u_encode($kh);
@@ -53,7 +53,7 @@ class U2F {
 
     $x509 = new File_X509();
     $rawCert = substr($rawReg, 67 + $khLen, $certLen);
-    $registration->certificate = bin2hex($rawCert);
+    $registration->certificate = base64_encode($rawCert);
     $cert = $x509->loadX509($rawCert);
     $rawKey = base64_decode($cert['tbsCertificate']['subjectPublicKeyInfo']['subjectPublicKey']);
     $signing_key = U2F::pubkey_decode(substr(bin2hex($rawKey), 2));
@@ -113,7 +113,7 @@ class U2F {
       return null;
     }
 
-    $key = U2F::pubkey_decode($reg->publicKey);
+    $key = U2F::pubkey_decode(bin2hex(U2F::base64u_decode($reg->publicKey)));
     $signData = U2F::base64u_decode($response->signatureData);
     $clientData = U2f::base64u_decode($response->clientData);
     $sha256 = hash_init('sha256');
@@ -150,7 +150,7 @@ class U2F {
 
   private static function pubkey_decode($key) {
     if(substr($key, 0, 2) != "04") {
-      throw new ErrorException("Key must be a HEX string of a public ECC key");
+      throw new \Exception("Key must be a HEX string of a public ECC key");
     }
     $curve = NISTcurve::generator_256();
     $x = gmp_strval(gmp_init(substr($key, 2, 64), 16), 10);
