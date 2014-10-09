@@ -53,9 +53,8 @@ class U2F {
     $certLen += $regData[67 + $khLen + 4];
 
     $x509 = new File_X509();
-    $rawCert = substr($rawReg, 67 + $khLen, $certLen);
-    $registration->certificate = base64_encode($rawCert);
-    $cert = $x509->loadX509($rawCert);
+    $registration->certificate = base64_encode(substr($rawReg, 67 + $khLen, $certLen));
+    $cert = $x509->loadX509($registration->certificate);
     $rawKey = base64_decode($cert['tbsCertificate']['subjectPublicKeyInfo']['subjectPublicKey']);
     $signing_key = U2F::pubkey_decode(substr(bin2hex($rawKey), 2));
     $signature = substr($rawReg, 67 + $khLen + $certLen);
