@@ -101,7 +101,7 @@ class U2F {
   }
 
   public function getAuthenticateData($registrations) {
-    $sigs = [];
+    $sigs = array();
     foreach ($registrations as $registration) {
       $reg = json_decode($registration);
       $sig = new SignRequest();
