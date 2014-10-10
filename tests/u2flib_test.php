@@ -40,7 +40,7 @@ class U2FTest extends \PHPUnit_Framework_TestCase {
   }
 
   public function testGetRegisterData() {
-    print $this->u2f->getRegisterData();
+    print_r($this->u2f->getRegisterData());
   }
 
   public function testDoRegister() {
