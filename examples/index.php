@@ -61,16 +61,18 @@ function addRegistration(reg) {
 
 <?php
 
+function fixupArray($data) {
+    $ret = array();
+    $decoded = json_decode($data);
+    foreach ($decoded as $d) {
+        $ret[] = json_encode($d);
+    }
+    return $ret;
+}
+
 if($_SERVER['REQUEST_METHOD'] === 'POST') {
     if(isset($_POST['startRegister'])) {
-        $regs = array();
-        if($_POST['registrations']) {
-            $registrations = json_decode($_POST['registrations']);
-            foreach ($registrations as $reg) {
-                $registration = json_encode($reg);
-                $regs[] = $registration;
-            }
-        }
+        $regs = fixupArray($_POST['registrations']);
         list($data, $reqs) = $u2f->getRegisterData($regs);
         echo "var request = $data;\n";
         echo "var signs = $reqs;\n";
@@ -104,7 +106,7 @@ if($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
 <?php
     } else if(isset($_POST['startAuthenticate'])) {
-        $regs = array($_POST['registrations']);
+        $regs = fixupArray($_POST['registrations']);
         $data = $u2f->getAuthenticateData($regs);
         echo "var registrations = " . $_POST['registrations'] . ";\n";
         echo "var request = $data;\n";
@@ -118,23 +120,24 @@ if($_SERVER['REQUEST_METHOD'] === 'POST') {
                 var regs = document.getElementById('registrations');
                 console.log("Authenticate callback", data);
                 reg.value=JSON.stringify(data);
-                // FIXME: this only sends the first request back..
-                req.value=JSON.stringify(request[0]);
+                req.value=JSON.stringify(request);
                 regs.value=JSON.stringify(registrations);
                 form.submit();
             });
         }, 1000);
 <?php
     } else if($_POST['doAuthenticate']) {
-        $reqs = array($_POST['request']);
-        $regs = array($_POST['registrations']);
+        $reqs = fixupArray($_POST['request']);
+        $regs = fixupArray($_POST['registrations']);
         $data = $u2f->doAuthenticate($reqs, $regs, $_POST['doAuthenticate']);
         echo "var auth = '$data';\n";
+?>
         if(auth != "") {
-            echo "alert('Authentication successful, counter:' + auth);\n";
+            alert('Authentication successful, counter:' + auth);
         } else {
-            echo "alert('Authentication failed.');\n";
+            alert('Authentication failed.');
         }
+<?php
     }
 }
 ?>
