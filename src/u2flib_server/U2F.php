@@ -42,10 +42,12 @@ define ('U2F_VERSION', 'U2F_V2');
 
 class U2F {
   private $appId;
+  private $attestDir;
 
-  public function __construct($appId) {
+  public function __construct($appId, $attestDir = null) {
     ModuleConfig::useGmp();
     $this->appId = $appId;
+    $this->attestDir = $attestDir;
   }
 
   public function getRegisterData($keyHandles = array()) {
@@ -78,9 +80,19 @@ class U2F {
     $certLen += ($regData[67 + $khLen + 3] << 8);
     $certLen += $regData[67 + $khLen + 4];
 
-    $x509 = new File_X509();
+    $x509 = $this->setup_certs();
     $registration->certificate = base64_encode(substr($rawReg, 67 + $khLen, $certLen));
     $cert = $x509->loadX509($registration->certificate);
+    if($this->attestDir) {
+      if(!$x509->validateSignature($cert)) {
+        return null;
+        /* XXX: validateDate uses platoform time_t to represent time, 
+         * this breaks with long validity periods and 32-bit platforms.
+      } else if (!$x509->validateDate()) {
+        return null; */
+      }
+    }
+
     $encodedKey = $cert['tbsCertificate']['subjectPublicKeyInfo']['subjectPublicKey'];
     $rawKey = base64_decode($encodedKey);
     $signing_key = U2F::pubkey_decode(substr(bin2hex($rawKey), 2));
@@ -156,6 +168,21 @@ class U2F {
     } else {
       return null;
     }
+  }
+
+  private function setup_certs() {
+    $x509 = new File_X509();
+    $dir = $this->attestDir;
+    if ($dir && $handle = opendir($dir)) {
+      while(false !== ($entry = readdir($handle))) {
+        if($entry !== "." && $entry !== "..") {
+          $contents = file_get_contents("$dir/$entry");
+          $x509->loadCA($contents);
+        }
+      }
+      closedir($handle);
+    }
+    return $x509;
   }
 
   private static function base64u_encode($data) {
