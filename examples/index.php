@@ -153,6 +153,11 @@ if($_SERVER['REQUEST_METHOD'] === 'POST') {
 <input type="hidden" name="request" id="request"/>
 <input type="hidden" name="registrations" id="registrations"/>
 </form>
+
+<p>
+<span id="registered">0</span> Authenticators currently registered.
+</p>
+
 <script>
 var reg = localStorage.getItem('u2fregistration');
 if(reg == null) {
@@ -162,6 +167,10 @@ if(reg == null) {
     var regs = document.getElementById('registrations');
     regs.value = reg;
     console.log("set the registrations to : ", reg);
+
+    var regged = document.getElementById('registered');
+    decoded = JSON.parse(reg);
+    regged.innerHTML = decoded.length;
 }
 </script>
 </body>
