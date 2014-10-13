@@ -57,7 +57,7 @@ class U2F {
     return array(json_encode($request), $signs);
   }
 
-  public function doRegister($request, $data) {
+  public function doRegister($request, $data, $include_cert = true) {
     $response = json_decode($data);
     $rawReg =  U2F::base64u_decode($response->registrationData);
     $regData = unpack('C*', $rawReg);
@@ -80,9 +80,12 @@ class U2F {
     $certLen += ($regData[67 + $khLen + 3] << 8);
     $certLen += $regData[67 + $khLen + 4];
 
+    $rawCert = substr($rawReg, 67 + $khLen, $certLen);
+    if($include_cert) {
+      $registration->certificate = base64_encode($rawCert);
+    }
     $x509 = $this->setup_certs();
-    $registration->certificate = base64_encode(substr($rawReg, 67 + $khLen, $certLen));
-    $cert = $x509->loadX509($registration->certificate);
+    $cert = $x509->loadX509($rawCert);
     if($this->attestDir) {
       if(!$x509->validateSignature($cert)) {
         return null;
