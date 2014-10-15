@@ -8,6 +8,3 @@ php:
 before_script:
   - composer self-update
   - composer install --no-interaction
-matrix:
-  allow_failures:
-    - php: hhvm
