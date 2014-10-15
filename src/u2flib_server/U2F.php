@@ -177,11 +177,11 @@ class U2F {
     $sig = U2f::sig_decode(substr($signData, 5));
     if($key->verifies(gmp_strval(gmp_init($hash, 16), 10), $sig) === true) {
       $ctr = unpack("C*", substr($signData, 1, 4));
-      $counter = ($ctr[1] << 24) + ($ctr[2] << 16) + ($ctr[3] << 8) + ($ctr[4]);
-      return $counter;
+      $ret = new Authentication(($ctr[1] << 24) + ($ctr[2] << 16) + ($ctr[3] << 8) + ($ctr[4]));
     } else {
-      $error = new Error(ERR_AUTHENTICATION_FAILURE, "Authentication failed");
+      $ret = new Error(ERR_AUTHENTICATION_FAILURE, "Authentication failed");
     }
+    return json_encode($ret);
   }
 
   private function setup_certs() {
@@ -251,6 +251,14 @@ class Registration {
   public $keyHandle;
   public $publicKey;
   public $certificate;
+}
+
+class Authentication {
+  public $counter;
+
+  public function __construct($counter) {
+    $this->counter = $counter;
+  }
 }
 
 class Error {
