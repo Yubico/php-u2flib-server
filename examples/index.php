@@ -96,13 +96,19 @@ if($_SERVER['REQUEST_METHOD'] === 'POST') {
 <?php
     } else if($_POST['doRegister']) {
         $data = $u2f->doRegister($_POST['request'], $_POST['doRegister']);
-        echo "var registration = '$data';\n";
+        $err = json_decode($data);
+        echo "var error = '';\nvar registration = '';\n";
+        if(property_exists($err, 'errorMessage')) {
+            echo "error = '" . $err->errorMessage . "'\n";
+        } else {
+            echo "registration = '$data';\n";
+        }
 ?>
         if(registration != "") {
             addRegistration(registration);
             alert("registration successful!");
         } else {
-            alert("registration failed!");
+            alert("registration failed: " + error);
         }
 <?php
     } else if(isset($_POST['startAuthenticate'])) {
@@ -129,13 +135,18 @@ if($_SERVER['REQUEST_METHOD'] === 'POST') {
     } else if($_POST['doAuthenticate']) {
         $reqs = fixupArray($_POST['request']);
         $regs = fixupArray($_POST['registrations']);
-        $data = $u2f->doAuthenticate($reqs, $regs, $_POST['doAuthenticate']);
-        echo "var auth = '$data';\n";
+        $data = json_decode($u2f->doAuthenticate($reqs, $regs, $_POST['doAuthenticate']));
+        echo "var auth = '';\nvar error = '';\n";
+        if(property_exists($data, 'counter')) {
+            echo "auth = '" . $data->counter . "';\n";
+        } else {
+            echo "error = '" . $data->errorMessage . "';\n";
+        }
 ?>
         if(auth != "") {
             alert('Authentication successful, counter:' + auth);
         } else {
-            alert('Authentication failed.');
+            alert('Authentication failed: ' + error);
         }
 <?php
     }
