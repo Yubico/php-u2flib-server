@@ -74,6 +74,7 @@ class U2F {
 
     if($cli->challenge !== $req->challenge) {
       $error = new Error(ERR_UNMATCHED_CHALLENGE, "Registration challenge does not match");
+      return json_encode($error);
     }
 
     $registration = new Registration();
