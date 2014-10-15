@@ -38,7 +38,14 @@ use \Mdanter\Ecc\Signature;
 use \Mdanter\Ecc\Point;
 
 
-define ('U2F_VERSION', 'U2F_V2');
+const U2F_VERSION = "U2F_V2";
+
+const ERR_NO_MATCHING_REQUEST = 1;
+const ERR_NO_MATCHING_REGISTRATION = 2;
+const ERR_AUTHENTICATION_FAILURE = 3;
+const ERR_UNMATCHED_CHALLENGE = 4;
+const ERR_ATTESTATION_SIGNATURE = 5;
+const ERR_ATTESTATION_VERIFICATION = 6;
 
 class U2F {
   private $appId;
@@ -66,7 +73,7 @@ class U2F {
     $cli = json_decode($clientData);
 
     if($cli->challenge !== $req->challenge) {
-      return null;
+      $error = new Error(ERR_UNMATCHED_CHALLENGE, "Registration challenge does not match");
     }
 
     $registration = new Registration();
@@ -88,8 +95,9 @@ class U2F {
     $cert = $x509->loadX509($rawCert);
     if($this->attestDir) {
       if(!$x509->validateSignature($cert)) {
-        return null;
-        /* XXX: validateDate uses platoform time_t to represent time, 
+        $error = new Error(ERR_ATTESTATION_VERIFICATION, "Attestation certificate can not be validated");
+        return json_encode($error);
+        /* XXX: validateDate uses platform time_t to represent time, 
          * this breaks with long validity periods and 32-bit platforms.
       } else if (!$x509->validateDate()) {
         return null; */
@@ -111,10 +119,11 @@ class U2F {
     $hash = hash_final($sha256);
 
     if($signing_key->verifies(gmp_strval(gmp_init($hash, 16), 10), $sig) == true) {
-      return json_encode($registration);
+      $ret = $registration;
     } else {
-      return null;
+      $ret = new Error(ERR_ATTESTATION_SIGNATURE, "Attestation signature does not match");
     }
+    return json_encode($ret);
   }
 
   public function getAuthenticateData($registrations) {
@@ -142,7 +151,8 @@ class U2F {
       $req = null;
     }
     if($req === null) {
-      return null;
+      $error = new Error(ERR_NO_MATCHING_REQUEST, "No matching request found");
+      return json_encode($error);
     }
     foreach ($registrations as $registration) {
       $reg = json_decode($registration);
@@ -152,7 +162,8 @@ class U2F {
       $reg = null;
     }
     if($reg === null) {
-      return null;
+      $error = new Error(ERR_NO_MATCHING_REGISTRATION, "No matching registration found");
+      return json_encode($error);
     }
 
     $key = U2F::pubkey_decode(bin2hex(U2F::base64u_decode($reg->publicKey)));
@@ -169,7 +180,7 @@ class U2F {
       $counter = ($ctr[1] << 24) + ($ctr[2] << 16) + ($ctr[3] << 8) + ($ctr[4]);
       return $counter;
     } else {
-      return null;
+      $error = new Error(ERR_AUTHENTICATION_FAILURE, "Authentication failed");
     }
   }
 
@@ -240,6 +251,16 @@ class Registration {
   public $keyHandle;
   public $publicKey;
   public $certificate;
+}
+
+class Error {
+  public $errorCode;
+  public $errorMessage;
+
+  public function __construct($code, $message) {
+    $this->errorCode = $code;
+    $this->errorMessage = $message;
+  }
 }
 
 ?>
