@@ -160,17 +160,21 @@ if($_SERVER['REQUEST_METHOD'] === 'POST') {
 
 <script>
 var reg = localStorage.getItem('u2fregistration');
+var auth = document.getElementById('startAuthenticate');
 if(reg == null) {
-    var auth = document.getElementById('startAuthenticate');
     auth.disabled = true;
 } else {
     var regs = document.getElementById('registrations');
-    regs.value = reg;
-    console.log("set the registrations to : ", reg);
-
-    var regged = document.getElementById('registered');
     decoded = JSON.parse(reg);
-    regged.innerHTML = decoded.length;
+    if(!Array.isArray(decoded)) {
+        auth.disabled = true;
+    } else {
+        regs.value = reg;
+        console.log("set the registrations to : ", reg);
+
+        var regged = document.getElementById('registered');
+        regged.innerHTML = decoded.length;
+    }
 }
 </script>
 </body>
