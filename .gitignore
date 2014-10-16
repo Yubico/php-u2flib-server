@@ -1,3 +1,5 @@
 composer.lock
 vendor/
 .*.swp
+php-u2flib-server-*.tar.gz
+php-u2flib-server-*.tar.gz.sig
