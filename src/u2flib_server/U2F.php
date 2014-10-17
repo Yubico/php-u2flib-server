@@ -52,7 +52,6 @@ class U2F {
   private $attestDir;
 
   public function __construct($appId, $attestDir = null) {
-    //ModuleConfig::useGmp();
     $this->appId = $appId;
     $this->attestDir = $attestDir;
   }
