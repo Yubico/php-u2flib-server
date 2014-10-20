@@ -46,6 +46,7 @@ const ERR_AUTHENTICATION_FAILURE = 3;
 const ERR_UNMATCHED_CHALLENGE = 4;
 const ERR_ATTESTATION_SIGNATURE = 5;
 const ERR_ATTESTATION_VERIFICATION = 6;
+const ERR_BAD_RANDOM = 7;
 
 class U2F {
   private $appId;
@@ -57,7 +58,11 @@ class U2F {
   }
 
   public function getRegisterData($keyHandles = array()) {
-    $challenge = U2F::base64u_encode(openssl_random_pseudo_bytes(32));
+    $challenge = U2F::base64u_encode(openssl_random_pseudo_bytes(32, $crypto_strong));
+    if($crypto_strong != true) {
+      $error = new Error(ERR_BAD_RANDOM, "Unable to obtain a good source of randomness");
+      return json_encode($error);
+    }
     $request = new RegisterRequest($challenge, $this->appId);
     $signs = $this->getAuthenticateData($keyHandles);
     return array(json_encode($request), $signs);
@@ -133,7 +138,11 @@ class U2F {
       $sig = new SignRequest();
       $sig->appId = $this->appId;
       $sig->keyHandle = $reg->keyHandle;
-      $sig->challenge = U2F::base64u_encode(openssl_random_pseudo_bytes(32));
+      $sig->challenge = U2F::base64u_encode(openssl_random_pseudo_bytes(32, $crypto_strong));
+      if($crypto_strong != true) {
+        $error = new Error(ERR_BAD_RANDOM, "Unable to obtain a good source of randomness");
+        return json_encode($error);
+      }
       $sigs[] = $sig;
     }
     return json_encode($sigs);
