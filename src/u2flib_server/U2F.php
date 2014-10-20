@@ -37,26 +37,51 @@ use \Mdanter\Ecc\PublicKey;
 use \Mdanter\Ecc\Signature;
 use \Mdanter\Ecc\Point;
 
-
+/** Constant for the version of the u2f protocol */
 const U2F_VERSION = "U2F_V2";
 
+/** Error for the authentication message not matching any outstanding
+ * authentication request */
 const ERR_NO_MATCHING_REQUEST = 1;
+/** Error for the authentication message not matching any registration */
 const ERR_NO_MATCHING_REGISTRATION = 2;
+/** Error for the signature on the authentication message not verifying with
+ * the correct key */
 const ERR_AUTHENTICATION_FAILURE = 3;
+/** Error for the challenge in the registration message not matching the
+ * registration challenge */
 const ERR_UNMATCHED_CHALLENGE = 4;
+/** Error for the attestation signature on the registration message not
+ * verifying */
 const ERR_ATTESTATION_SIGNATURE = 5;
+/** Error for the attestation verification not verifying */
 const ERR_ATTESTATION_VERIFICATION = 6;
+/** Error for not getting good random from the system */
 const ERR_BAD_RANDOM = 7;
 
 class U2F {
   private $appId;
   private $attestDir;
 
+  /**
+   * @param string Application id for the running application
+   * @param string Directory where trusted attestation roots may be found
+   */
   public function __construct($appId, $attestDir = null) {
     $this->appId = $appId;
     $this->attestDir = $attestDir;
   }
 
+  /**
+   * Called to get a registration request to send to a user.
+   * Returns an array of (json encoded) one registration request and
+   * a json encoded array of sign requests.
+   * @param array $keyhandles optional list of current key handles for this
+   * user, to prevent the user from registering the same authenticator serveral
+   * times.
+   * @return array|Error An array of two elements, the first containing a json encoded
+   * RegisterRequest the second being a json encoded array of SignRequest
+   */
   public function getRegisterData($keyHandles = array()) {
     $challenge = U2F::base64u_encode(openssl_random_pseudo_bytes(32, $crypto_strong));
     if($crypto_strong != true) {
@@ -68,6 +93,14 @@ class U2F {
     return array(json_encode($request), $signs);
   }
 
+  /**
+   * Called to verify and unpack a registration message.
+   * @param RegisterRequest json encoded request this is a reply to
+   * @param RegisterResponse json encoded response from a user
+   * @param bool set to true if the attestation certificate should be
+   * included in the returned Registration object
+   * @return Registration|Error json encoded
+   */
   public function doRegister($request, $data, $include_cert = true) {
     $response = json_decode($data);
     $rawReg =  U2F::base64u_decode($response->registrationData);
@@ -131,6 +164,12 @@ class U2F {
     return json_encode($ret);
   }
 
+  /**
+   * Called to get an authentication request.
+   * @param array An array of the (json encoded) registrations to create
+   * authentication requests for.
+   * @return array|Error A json encoded array of SignRequest
+   */
   public function getAuthenticateData($registrations) {
     $sigs = array();
     foreach ($registrations as $registration) {
@@ -148,6 +187,13 @@ class U2F {
     return json_encode($sigs);
   }
 
+  /**
+   * Called to verify an authentication response
+   * @param array An array of outstanding authentication requests
+   * @param array An array of current registrations
+   * @param SignResponse A json encoded response from the authenticator
+   * @return Authentication|Error json encoded
+   */
   public function doAuthenticate($requests, $registrations, $data) {
     $response = json_decode($data);
     $req = null;
@@ -238,42 +284,64 @@ class U2F {
   }
 }
 
+/** Class for building a registration request */
 class RegisterRequest {
+  /** Protocol version */
   public $version = U2F_VERSION;
+  /** Registration challenge */
   public $challenge;
+  /** Application id */
   public $appId;
 
+  /** @internal */
   public function __construct($challenge, $appId) {
     $this->challenge = $challenge;
     $this->appId = $appId;
   }
 }
 
+/** Class for building up an authentication request */
 class SignRequest {
+  /** Protocol version */
   public $version = U2F_VERSION;
+  /** Authenticateion challenge */
   public $challenge;
+  /** Key handle of a registered authenticator */
   public $keyHandle;
+  /** Application id */
   public $appId;
 }
 
+/** Class returned for successful registrations */
 class Registration {
+  /** The key handle of the registered authenticator */
   public $keyHandle;
+  /** The public key of the registered authenticator */
   public $publicKey;
+  /** The attestation certificate of the registered authenticator */
   public $certificate;
 }
 
+/** Class returned for successful authentications */
 class Authentication {
+  /** Counter that should always be increasing. The counter should be stored
+   * and compared on authentications. */
   public $counter;
 
+  /** @internal */
   public function __construct($counter) {
     $this->counter = $counter;
   }
 }
 
+/** Error class, returned on errors */
 class Error {
+  /** code for the error */
   public $errorCode;
+  /** readable error message */
   public $errorMessage;
 
+  /** @internal */
   public function __construct($code, $message) {
     $this->errorCode = $code;
     $this->errorMessage = $message;

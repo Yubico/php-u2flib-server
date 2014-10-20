@@ -1,0 +1,8 @@
+destination: apidocs
+
+source:
+  - src/u2flib_server
+
+exclude: "*/tests/*"
+
+groups: none
