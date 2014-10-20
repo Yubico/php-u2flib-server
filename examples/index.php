@@ -28,6 +28,13 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+/**
+ * This is a minimal example of U2F registration and authentication.
+ * The data that has to be stored between registration and authentication
+ * is stored in browser localStorage, so there's nothing real-world
+ * about this.
+ */
+
 require_once('../vendor/autoload.php');
 
 $scheme = isset($_SERVER['HTTPS']) ? "https://" : "http://";
