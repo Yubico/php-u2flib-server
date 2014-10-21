@@ -125,6 +125,12 @@ class U2F {
     $offs = 1;
     $pubKey = substr($rawReg, $offs, PUBKEY_LEN);
     $offs += PUBKEY_LEN;
+    // decode the pubKey to make sure it's good
+    $tmpkey = U2F::pubkey_decode(bin2hex($pubKey));
+    if($tmpkey == null) {
+      $error = new Error(ERR_PUBKEY_DECODE, "Decoding of public key failed");
+      return json_encode($error);
+    }
     $registration->publicKey = base64_encode($pubKey);
     $khLen = $regData[$offs++];
     $kh = substr($rawReg, $offs, $khLen);
