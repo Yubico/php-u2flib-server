@@ -194,7 +194,7 @@ class U2F {
    * @param array An array of outstanding authentication requests
    * @param array An array of current registrations
    * @param SignResponse A json encoded response from the authenticator
-   * @return Authentication|Error json encoded
+   * @return Registration|Error json encoded
    */
   public function doAuthenticate($requests, $registrations, $data) {
     $response = json_decode($data);
