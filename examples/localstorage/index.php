@@ -35,7 +35,7 @@
  * about this.
  */
 
-require_once('../vendor/autoload.php');
+require_once('../../vendor/autoload.php');
 
 $scheme = isset($_SERVER['HTTPS']) ? "https://" : "http://";
 $u2f = new u2flib_server\U2F($scheme . $_SERVER['HTTP_HOST']);
