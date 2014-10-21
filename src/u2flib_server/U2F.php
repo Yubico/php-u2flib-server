@@ -61,6 +61,9 @@ const ERR_BAD_RANDOM = 7;
 /** Error when the counter is lower than expected */
 const ERR_COUNTER_TO_LOW = 8;
 
+/** @internal */
+const PUBKEY_LEN = 65;
+
 class U2F {
   private $appId;
   private $attestDir;
@@ -106,7 +109,7 @@ class U2F {
   public function doRegister($request, $data, $include_cert = true) {
     $response = json_decode($data);
     $rawReg =  U2F::base64u_decode($response->registrationData);
-    $regData = unpack('C*', $rawReg);
+    $regData = array_values(unpack('C*', $rawReg));
     $clientData = U2F::base64u_decode($response->clientData);
     $req = json_decode($request);
     $cli = json_decode($clientData);
@@ -117,17 +120,22 @@ class U2F {
     }
 
     $registration = new Registration();
-    $pubKey = substr($rawReg, 1, 65);
+    $offs = 1;
+    $pubKey = substr($rawReg, $offs, PUBKEY_LEN);
+    $offs += PUBKEY_LEN;
     $registration->publicKey = base64_encode($pubKey);
-    $khLen = $regData[67];
-    $kh = substr($rawReg, 67, $khLen);
+    $khLen = $regData[$offs++];
+    $kh = substr($rawReg, $offs, $khLen);
+    $offs += $khLen;
     $registration->keyHandle = U2F::base64u_encode($kh);
 
+    // length of certificate is stored in byte 3 and 4 (excluding the first 4 bytes)
     $certLen = 4;
-    $certLen += ($regData[67 + $khLen + 3] << 8);
-    $certLen += $regData[67 + $khLen + 4];
+    $certLen += ($regData[$offs + 2] << 8);
+    $certLen += $regData[$offs + 3];
 
-    $rawCert = substr($rawReg, 67 + $khLen, $certLen);
+    $rawCert = substr($rawReg, $offs, $certLen);
+    $offs += $certLen;
     if($include_cert) {
       $registration->certificate = base64_encode($rawCert);
     }
@@ -147,7 +155,7 @@ class U2F {
     $encodedKey = $cert['tbsCertificate']['subjectPublicKeyInfo']['subjectPublicKey'];
     $rawKey = base64_decode($encodedKey);
     $signing_key = U2F::pubkey_decode(substr(bin2hex($rawKey), 2));
-    $signature = substr($rawReg, 67 + $khLen + $certLen);
+    $signature = substr($rawReg, $offs);
     $sig = U2F::sig_decode($signature);
 
     $sha256 = hash_init('sha256');
