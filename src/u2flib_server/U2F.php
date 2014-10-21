@@ -60,6 +60,8 @@ const ERR_ATTESTATION_VERIFICATION = 6;
 const ERR_BAD_RANDOM = 7;
 /** Error when the counter is lower than expected */
 const ERR_COUNTER_TO_LOW = 8;
+/** Error decoding public key */
+const ERR_PUBKEY_DECODE = 9;
 
 /** @internal */
 const PUBKEY_LEN = 65;
@@ -155,6 +157,10 @@ class U2F {
     $encodedKey = $cert['tbsCertificate']['subjectPublicKeyInfo']['subjectPublicKey'];
     $rawKey = base64_decode($encodedKey);
     $signing_key = U2F::pubkey_decode(substr(bin2hex($rawKey), 2));
+    if($signing_key == null) {
+      $error = new Error(ERR_PUBKEY_DECODE, "Decoding of public key failed");
+      return json_encode($error);
+    }
     $signature = substr($rawReg, $offs);
     $sig = U2F::sig_decode($signature);
 
@@ -232,6 +238,10 @@ class U2F {
     }
 
     $key = U2F::pubkey_decode(bin2hex(U2F::base64u_decode($reg->publicKey)));
+    if($key == null) {
+      $error = new Error(ERR_PUBKEY_DECODE, "Decoding of public key failed");
+      return json_encode($error);
+    }
     $signData = U2F::base64u_decode($response->signatureData);
     $clientData = U2f::base64u_decode($response->clientData);
     $sha256 = hash_init('sha256');
@@ -290,7 +300,7 @@ class U2F {
 
   private static function pubkey_decode($key) {
     if(substr($key, 0, 2) != "04") {
-      throw new \Exception("Key must be a HEX string of a public ECC key");
+      return null;
     }
     $curve = EccFactory::getNistCurves()->generator256();
     $x = gmp_strval(gmp_init(substr($key, 2, 64), 16), 10);
