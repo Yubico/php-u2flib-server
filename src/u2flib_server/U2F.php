@@ -241,7 +241,8 @@ class U2F {
     $hash = hash_final($sha256);
     $sig = U2f::sig_decode(substr($signData, 5));
     if($key->verifies(gmp_strval(gmp_init($hash, 16), 10), $sig) === true) {
-      $counter = unpack("Nctr", substr($signData, 1, 4))['ctr'];
+      $ctr = unpack("Nctr", substr($signData, 1, 4));
+      $counter = $ctr['ctr'];
       if($counter > $reg->counter) {
         $reg->counter = $counter;
         $ret = $reg;
