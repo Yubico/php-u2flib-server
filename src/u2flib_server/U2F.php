@@ -58,6 +58,8 @@ const ERR_ATTESTATION_SIGNATURE = 5;
 const ERR_ATTESTATION_VERIFICATION = 6;
 /** Error for not getting good random from the system */
 const ERR_BAD_RANDOM = 7;
+/** Error when the counter is lower than expected */
+const ERR_COUNTER_TO_LOW = 8;
 
 class U2F {
   private $appId;
@@ -231,8 +233,13 @@ class U2F {
     $hash = hash_final($sha256);
     $sig = U2f::sig_decode(substr($signData, 5));
     if($key->verifies(gmp_strval(gmp_init($hash, 16), 10), $sig) === true) {
-      $ctr = unpack("C*", substr($signData, 1, 4));
-      $ret = new Authentication(($ctr[1] << 24) + ($ctr[2] << 16) + ($ctr[3] << 8) + ($ctr[4]));
+      $counter = unpack("Nctr", substr($signData, 1, 4))['ctr'];
+      if($counter > $reg->counter) {
+        $reg->counter = $counter;
+        $ret = $reg;
+      } else {
+        $ret = new Error(ERR_COUNTER_TO_LOW, "Counter to low.");
+      }
     } else {
       $ret = new Error(ERR_AUTHENTICATION_FAILURE, "Authentication failed");
     }
@@ -320,18 +327,8 @@ class Registration {
   public $publicKey;
   /** The attestation certificate of the registered authenticator */
   public $certificate;
-}
-
-/** Class returned for successful authentications */
-class Authentication {
-  /** Counter that should always be increasing. The counter should be stored
-   * and compared on authentications. */
-  public $counter;
-
-  /** @internal */
-  public function __construct($counter) {
-    $this->counter = $counter;
-  }
+  /** The counter associated with this registration */
+  public $counter = 0;
 }
 
 /** Error class, returned on errors */
