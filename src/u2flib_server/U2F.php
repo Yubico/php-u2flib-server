@@ -81,44 +81,40 @@ class U2F {
 
   /**
    * Called to get a registration request to send to a user.
-   * Returns an array of (json encoded) one registration request and
-   * a json encoded array of sign requests.
+   * Returns an array of one registration request and a array of sign requests.
    * @param array $keyhandles optional list of current key handles for this
    * user, to prevent the user from registering the same authenticator serveral
    * times.
-   * @return array|Error An array of two elements, the first containing a json encoded
-   * RegisterRequest the second being a json encoded array of SignRequest
+   * @return array|Error An array of two elements, the first containing a
+   * RegisterRequest the second being an array of SignRequest
    */
   public function getRegisterData($keyHandles = array()) {
     $challenge = U2F::base64u_encode(openssl_random_pseudo_bytes(32, $crypto_strong));
     if($crypto_strong != true) {
       $error = new Error(ERR_BAD_RANDOM, "Unable to obtain a good source of randomness");
-      return json_encode($error);
+      return $error;
     }
     $request = new RegisterRequest($challenge, $this->appId);
     $signs = $this->getAuthenticateData($keyHandles);
-    return array(json_encode($request), $signs);
+    return array($request, $signs);
   }
 
   /**
    * Called to verify and unpack a registration message.
-   * @param RegisterRequest json encoded request this is a reply to
-   * @param RegisterResponse json encoded response from a user
+   * @param RegisterRequest request this is a reply to
+   * @param RegisterResponse response from a user
    * @param bool set to true if the attestation certificate should be
    * included in the returned Registration object
-   * @return Registration|Error json encoded
+   * @return Registration|Error
    */
-  public function doRegister($request, $data, $include_cert = true) {
-    $response = json_decode($data);
+  public function doRegister($request, $response, $include_cert = true) {
     $rawReg =  U2F::base64u_decode($response->registrationData);
     $regData = array_values(unpack('C*', $rawReg));
     $clientData = U2F::base64u_decode($response->clientData);
-    $req = json_decode($request);
     $cli = json_decode($clientData);
 
-    if($cli->challenge !== $req->challenge) {
-      $error = new Error(ERR_UNMATCHED_CHALLENGE, "Registration challenge does not match");
-      return json_encode($error);
+    if($cli->challenge !== $request->challenge) {
+      return new Error(ERR_UNMATCHED_CHALLENGE, "Registration challenge does not match");
     }
 
     $registration = new Registration();
@@ -128,8 +124,7 @@ class U2F {
     // decode the pubKey to make sure it's good
     $tmpkey = U2F::pubkey_decode(bin2hex($pubKey));
     if($tmpkey == null) {
-      $error = new Error(ERR_PUBKEY_DECODE, "Decoding of public key failed");
-      return json_encode($error);
+      return new Error(ERR_PUBKEY_DECODE, "Decoding of public key failed");
     }
     $registration->publicKey = base64_encode($pubKey);
     $khLen = $regData[$offs++];
@@ -151,8 +146,7 @@ class U2F {
     $cert = $x509->loadX509($rawCert);
     if($this->attestDir) {
       if(!$x509->validateSignature($cert)) {
-        $error = new Error(ERR_ATTESTATION_VERIFICATION, "Attestation certificate can not be validated");
-        return json_encode($error);
+        return new Error(ERR_ATTESTATION_VERIFICATION, "Attestation certificate can not be validated");
         /* XXX: validateDate uses platform time_t to represent time, 
          * this breaks with long validity periods and 32-bit platforms.
       } else if (!$x509->validateDate()) {
@@ -164,89 +158,78 @@ class U2F {
     $rawKey = base64_decode($encodedKey);
     $signing_key = U2F::pubkey_decode(substr(bin2hex($rawKey), 2));
     if($signing_key == null) {
-      $error = new Error(ERR_PUBKEY_DECODE, "Decoding of public key failed");
-      return json_encode($error);
+      return new Error(ERR_PUBKEY_DECODE, "Decoding of public key failed");
     }
     $signature = substr($rawReg, $offs);
     $sig = U2F::sig_decode($signature);
 
     $sha256 = hash_init('sha256');
     hash_update($sha256, chr(0));
-    hash_update($sha256, hash('sha256', $req->appId, true));
+    hash_update($sha256, hash('sha256', $request->appId, true));
     hash_update($sha256, hash('sha256', $clientData, true));
     hash_update($sha256, $kh);
     hash_update($sha256, $pubKey);
     $hash = hash_final($sha256);
 
     if($signing_key->verifies(gmp_strval(gmp_init($hash, 16), 10), $sig) == true) {
-      $ret = $registration;
+      return $registration;
     } else {
-      $ret = new Error(ERR_ATTESTATION_SIGNATURE, "Attestation signature does not match");
+      return new Error(ERR_ATTESTATION_SIGNATURE, "Attestation signature does not match");
     }
-    return json_encode($ret);
   }
 
   /**
    * Called to get an authentication request.
-   * @param array An array of the (json encoded) registrations to create
-   * authentication requests for.
-   * @return array|Error A json encoded array of SignRequest
+   * @param array An array of the registrations to create authentication requests for.
+   * @return array|Error An array of SignRequest
    */
   public function getAuthenticateData($registrations) {
     $sigs = array();
-    foreach ($registrations as $registration) {
-      $reg = json_decode($registration);
+    foreach ($registrations as $reg) {
       $sig = new SignRequest();
       $sig->appId = $this->appId;
       $sig->keyHandle = $reg->keyHandle;
       $sig->challenge = U2F::base64u_encode(openssl_random_pseudo_bytes(32, $crypto_strong));
       if($crypto_strong != true) {
-        $error = new Error(ERR_BAD_RANDOM, "Unable to obtain a good source of randomness");
-        return json_encode($error);
+        return new Error(ERR_BAD_RANDOM, "Unable to obtain a good source of randomness");
       }
       $sigs[] = $sig;
     }
-    return json_encode($sigs);
+    return $sigs;
   }
 
   /**
    * Called to verify an authentication response
    * @param array An array of outstanding authentication requests
    * @param array An array of current registrations
-   * @param SignResponse A json encoded response from the authenticator
-   * @return Registration|Error json encoded
+   * @param SignResponse A response from the authenticator
+   * @return Registration|Error
    */
-  public function doAuthenticate($requests, $registrations, $data) {
-    $response = json_decode($data);
+  public function doAuthenticate($requests, $registrations, $response) {
     $req = null;
     $reg = null;
-    foreach ($requests as $request) {
-      $req = json_decode($request);
+    foreach ($requests as $req) {
       if($req->keyHandle === $response->keyHandle) {
         break;
       }
       $req = null;
     }
     if($req === null) {
-      $error = new Error(ERR_NO_MATCHING_REQUEST, "No matching request found");
-      return json_encode($error);
+      return new Error(ERR_NO_MATCHING_REQUEST, "No matching request found");
     }
-    foreach ($registrations as $registration) {
-      $reg = json_decode($registration);
+    foreach ($registrations as $reg) {
       if($reg->keyHandle === $response->keyHandle) {
         break;
       }
       $reg = null;
     }
     if($reg === null) {
-      $error = new Error(ERR_NO_MATCHING_REGISTRATION, "No matching registration found");
-      return json_encode($error);
+      return new Error(ERR_NO_MATCHING_REGISTRATION, "No matching registration found");
     }
 
     $key = U2F::pubkey_decode(bin2hex(U2F::base64u_decode($reg->publicKey)));
     if($key == null) {
-      $error = new Error(ERR_PUBKEY_DECODE, "Decoding of public key failed");
-      return json_encode($error);
+      return new Error(ERR_PUBKEY_DECODE, "Decoding of public key failed");
     }
     $signData = U2F::base64u_decode($response->signatureData);
     $clientData = U2f::base64u_decode($response->clientData);
@@ -261,14 +244,13 @@ class U2F {
       $counter = $ctr['ctr'];
       if($counter > $reg->counter) {
         $reg->counter = $counter;
-        $ret = $reg;
+        return $reg;
       } else {
-        $ret = new Error(ERR_COUNTER_TO_LOW, "Counter to low.");
+        return new Error(ERR_COUNTER_TO_LOW, "Counter to low.");
       }
     } else {
-      $ret = new Error(ERR_AUTHENTICATION_FAILURE, "Authentication failed");
+      return new Error(ERR_AUTHENTICATION_FAILURE, "Authentication failed");
     }
-    return json_encode($ret);
   }
 
   private function setup_certs() {
