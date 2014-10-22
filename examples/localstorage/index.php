@@ -79,10 +79,10 @@ function fixupArray($data) {
 
 if($_SERVER['REQUEST_METHOD'] === 'POST') {
     if(isset($_POST['startRegister'])) {
-        $regs = fixupArray($_POST['registrations']);
+        $regs = json_decode($_POST['registrations']);
         list($data, $reqs) = $u2f->getRegisterData($regs);
-        echo "var request = $data;\n";
-        echo "var signs = $reqs;\n";
+        echo "var request = " . json_encode($data) . ";\n";
+        echo "var signs = " . json_encode($reqs) . ";\n";
 ?>
         setTimeout(function() {
             console.log("Register: ", request);
@@ -102,13 +102,12 @@ if($_SERVER['REQUEST_METHOD'] === 'POST') {
         }, 1000);
 <?php
     } else if($_POST['doRegister']) {
-        $data = $u2f->doRegister($_POST['request'], $_POST['doRegister']);
-        $err = json_decode($data);
+        $data = $u2f->doRegister(json_decode($_POST['request']), json_decode($_POST['doRegister']));
         echo "var error = '';\nvar registration = '';\n";
-        if(property_exists($err, 'errorMessage')) {
-            echo "error = '" . $err->errorMessage . "'\n";
+        if(property_exists($data, 'errorMessage')) {
+            echo "error = '" . $data->errorMessage . "'\n";
         } else {
-            echo "registration = '$data';\n";
+            echo "registration = '" . json_encode($data) . "';\n";
         }
 ?>
         if(registration != "") {
@@ -119,10 +118,10 @@ if($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
 <?php
     } else if(isset($_POST['startAuthenticate'])) {
-        $regs = fixupArray($_POST['registrations']);
+        $regs = json_decode($_POST['registrations']);
         $data = $u2f->getAuthenticateData($regs);
         echo "var registrations = " . $_POST['registrations'] . ";\n";
-        echo "var request = $data;\n";
+        echo "var request = " . json_encode($data) . ";\n";
 ?>
         setTimeout(function() {
             console.log("sign: ", request);
@@ -140,9 +139,9 @@ if($_SERVER['REQUEST_METHOD'] === 'POST') {
         }, 1000);
 <?php
     } else if($_POST['doAuthenticate']) {
-        $reqs = fixupArray($_POST['request']);
-        $regs = fixupArray($_POST['registrations']);
-        $data = json_decode($u2f->doAuthenticate($reqs, $regs, $_POST['doAuthenticate']));
+        $reqs = json_decode($_POST['request']);
+        $regs = json_decode($_POST['registrations']);
+        $data = $u2f->doAuthenticate($reqs, $regs, json_decode($_POST['doAuthenticate']));
         echo "var auth = '';\nvar error = '';\n";
         if(property_exists($data, 'counter')) {
             echo "auth = '" . $data->counter . "';\n";
