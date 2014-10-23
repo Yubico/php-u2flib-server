@@ -16,14 +16,13 @@ closed interval.
 
 === Dependencies ===
 
-Dependencies are managed with composer, see https://getcomposer.org/
-for information about obtaining that.
-To setup dependencies when composer is availabel, run:
+Dependencies are managed with link:https://getcomposer.org[composer].
+To setup dependencies when composer is available, run:
 
  $ composer.phar install
 
 === Tests ===
 
-To run the testsuite phpunit is required, to run it:
+To run the test suite link:https://phpunit.de[PHPUnit] is required. To run it, type:
 
  $ phpunit
