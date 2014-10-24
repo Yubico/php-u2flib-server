@@ -29,7 +29,7 @@ git push --tags
 tmpdir=`mktemp -d /tmp/release.XXXXXX`
 releasedir=${tmpdir}/${releasename}
 mkdir -p $releasedir
-git archive $releasename --format=tar | tar -xC $releasedir
+git archive $VERSION --format=tar | tar -xC $releasedir
 git2cl > $releasedir/ChangeLog
 cd $releasedir
 composer.phar install
@@ -39,4 +39,3 @@ tar -cz --directory=$tmpdir --file=${releasename}.tar.gz $releasename
 gpg --detach-sign --default-key $PGP_KEYID ${releasename}.tar.gz
 $YUBICO_GITHUB_REPO/publish php-u2flib-server $VERSION ${releasename}.tar.gz*
 rm -rf $tmpdir
-rm -rf $stagedir
