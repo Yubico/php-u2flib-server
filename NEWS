@@ -1,5 +1,7 @@
 php-u2flib-server NEWS -- History of user-visible changes.
 
+* Version 0.0.3 (unreleased)
+
 * Version 0.0.2 (released 2014-10-24)
 
 ** Refactor the API to return objects instead of encoded objects.
