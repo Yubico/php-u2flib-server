@@ -9,8 +9,7 @@
   } ],
   "require": {
     "phpseclib/phpseclib":"0.3.*",
-    "ext-gmp":"*",
-    "mdanter/ecc":"dev-master"
+    "ext-openssl":"*"
   },
   "autoload": {
     "classmap": ["src/"]

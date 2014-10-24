@@ -32,10 +32,6 @@ namespace u2flib_server;
 
 use \File_X509;
 use \File_ASN1;
-use \Mdanter\Ecc\EccFactory;
-use \Mdanter\Ecc\PublicKey;
-use \Mdanter\Ecc\Signature;
-use \Mdanter\Ecc\Point;
 
 /** Constant for the version of the u2f protocol */
 const U2F_VERSION = "U2F_V2";
@@ -122,7 +118,7 @@ class U2F {
     $pubKey = substr($rawReg, $offs, PUBKEY_LEN);
     $offs += PUBKEY_LEN;
     // decode the pubKey to make sure it's good
-    $tmpkey = U2F::pubkey_decode(bin2hex($pubKey));
+    $tmpkey = U2F::pubkey_to_pem($pubKey);
     if($tmpkey == null) {
       return new Error(ERR_PUBKEY_DECODE, "Decoding of public key failed");
     }
@@ -156,22 +152,19 @@ class U2F {
 
     $encodedKey = $cert['tbsCertificate']['subjectPublicKeyInfo']['subjectPublicKey'];
     $rawKey = base64_decode($encodedKey);
-    $signing_key = U2F::pubkey_decode(substr(bin2hex($rawKey), 2));
-    if($signing_key == null) {
+    $pemKey = U2F::pubkey_to_pem(substr($rawKey, 1));
+    if($pemKey == null) {
       return new Error(ERR_PUBKEY_DECODE, "Decoding of public key failed");
     }
     $signature = substr($rawReg, $offs);
-    $sig = U2F::sig_decode($signature);
 
-    $sha256 = hash_init('sha256');
-    hash_update($sha256, chr(0));
-    hash_update($sha256, hash('sha256', $request->appId, true));
-    hash_update($sha256, hash('sha256', $clientData, true));
-    hash_update($sha256, $kh);
-    hash_update($sha256, $pubKey);
-    $hash = hash_final($sha256);
+    $dataToVerify  = chr(0);
+    $dataToVerify .= hash('sha256', $request->appId, true);
+    $dataToVerify .= hash('sha256', $clientData, true);
+    $dataToVerify .= $kh;
+    $dataToVerify .= $pubKey;
 
-    if($signing_key->verifies(gmp_strval(gmp_init($hash, 16), 10), $sig) == true) {
+    if(openssl_verify($dataToVerify, $signature, $pemKey, OPENSSL_ALGO_SHA256) === 1) {
       return $registration;
     } else {
       return new Error(ERR_ATTESTATION_SIGNATURE, "Attestation signature does not match");
@@ -226,20 +219,19 @@ class U2F {
     if($reg === null) {
       return new Error(ERR_NO_MATCHING_REGISTRATION, "No matching registration found");
     }
-
-    $key = U2F::pubkey_decode(bin2hex(U2F::base64u_decode($reg->publicKey)));
-    if($key == null) {
+    $pemKey = U2F::pubkey_to_pem(U2F::base64u_decode($reg->publicKey));
+    if($pemKey == null) {
       return new Error(ERR_PUBKEY_DECODE, "Decoding of public key failed");
     }
+
     $signData = U2F::base64u_decode($response->signatureData);
     $clientData = U2f::base64u_decode($response->clientData);
-    $sha256 = hash_init('sha256');
-    hash_update($sha256, hash('sha256', $req->appId, true));
-    hash_update($sha256, substr($signData, 0, 5));
-    hash_update($sha256, hash('sha256', $clientData, true));
-    $hash = hash_final($sha256);
-    $sig = U2f::sig_decode(substr($signData, 5));
-    if($key->verifies(gmp_strval(gmp_init($hash, 16), 10), $sig) === true) {
+    $dataToVerify  = hash('sha256', $req->appId, true);
+    $dataToVerify .= substr($signData, 0, 5);
+    $dataToVerify .= hash('sha256', $clientData, true);
+    $signature = substr($signData, 5);
+
+    if(openssl_verify($dataToVerify, $signature, $pemKey, OPENSSL_ALGO_SHA256) === 1) {
       $ctr = unpack("Nctr", substr($signData, 1, 4));
       $counter = $ctr['ctr'];
       if($counter > $reg->counter) {
@@ -276,25 +268,38 @@ class U2F {
     return base64_decode(strtr($data, '-_', '+/'));
   }
 
-  private static function sig_decode($signature) {
-    $asn1 = new File_ASN1();
-    $sig = $asn1->decodeBER($signature);
-    $r = $sig[0]['content'][0]['content'];
-    $s = $sig[0]['content'][1]['content'];
-    $gmpR = gmp_strval(gmp_init($r->toHex(), 16), 10);
-    $gmpS = gmp_strval(gmp_init($s->toHex(), 16), 10);
-    return new Signature($gmpR, $gmpS);
-  }
-
-  private static function pubkey_decode($key) {
-    if(substr($key, 0, 2) != "04") {
+  private static function pubkey_to_pem($key) {
+    if(!strlen($key) || $key[0] != "\x04") {
       return null;
     }
-    $curve = EccFactory::getNistCurves()->generator256();
-    $x = gmp_strval(gmp_init(substr($key, 2, 64), 16), 10);
-    $y = gmp_strval(gmp_init(substr($key, 2+64, 64), 16), 10);
-    $adapter = EccFactory::getAdapter();
-    return new PublicKey($curve, new Point($curve->getCurve(), $x, $y, null, $adapter), $adapter);
+
+    /* RFC 5480 */
+    $asn1 = new File_ASN1();
+    $algMapping = array(
+      'type' => FILE_ASN1_TYPE_SEQUENCE,
+      'children' => array(
+        'algorithm' => array('type' => FILE_ASN1_TYPE_OBJECT_IDENTIFIER),
+        'parameters' => array('type' => FILE_ASN1_TYPE_OBJECT_IDENTIFIER)
+      )
+    );
+    $mapping = array(
+      'type' => FILE_ASN1_TYPE_SEQUENCE,
+      'children' => array(
+        'algorithm' => $algMapping,
+        'subjectPublicKey' => array('type' => FILE_ASN1_TYPE_BIT_STRING)
+      )
+    );
+
+    $data['subjectPublicKey'] = base64_encode("\0".$key);
+    $data['algorithm']['algorithm'] = '1.2.840.10045.2.1'; /* id-ecPublicKey */
+    $data['algorithm']['parameters'] = '1.2.840.10045.3.1.7'; /* secp256r1 */
+
+    $der = $asn1->encodeDER($data, $mapping);
+    $pem  = "-----BEGIN PUBLIC KEY-----\r\n";
+    $pem .= chunk_split(base64_encode($der), 64);
+    $pem .= "-----END PUBLIC KEY-----";
+
+    return $pem;
   }
 }
 
