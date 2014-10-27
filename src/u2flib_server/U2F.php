@@ -30,13 +30,6 @@
 
 namespace u2flib_server;
 
-use \File_X509;
-use \File_ASN1;
-use \Mdanter\Ecc\EccFactory;
-use \Mdanter\Ecc\PublicKey;
-use \Mdanter\Ecc\Signature;
-use \Mdanter\Ecc\Point;
-
 /** Constant for the version of the u2f protocol */
 const U2F_VERSION = "U2F_V2";
 
@@ -122,7 +115,7 @@ class U2F {
     $pubKey = substr($rawReg, $offs, PUBKEY_LEN);
     $offs += PUBKEY_LEN;
     // decode the pubKey to make sure it's good
-    $tmpkey = U2F::pubkey_decode(bin2hex($pubKey));
+    $tmpkey = U2F::pubkey_to_pem($pubKey);
     if($tmpkey == null) {
       return new Error(ERR_PUBKEY_DECODE, "Decoding of public key failed");
     }
@@ -139,39 +132,30 @@ class U2F {
 
     $rawCert = substr($rawReg, $offs, $certLen);
     $offs += $certLen;
+    $pemCert  = "-----BEGIN CERTIFICATE-----\r\n";
+    $pemCert .= chunk_split(base64_encode($rawCert), 64);
+    $pemCert .= "-----END CERTIFICATE-----";
     if($include_cert) {
       $registration->certificate = base64_encode($rawCert);
     }
-    $x509 = $this->setup_certs();
-    $cert = $x509->loadX509($rawCert);
     if($this->attestDir) {
-      if(!$x509->validateSignature($cert)) {
+      if(openssl_x509_checkpurpose($pemCert, -1, $this->get_certs()) !== true) {
         return new Error(ERR_ATTESTATION_VERIFICATION, "Attestation certificate can not be validated");
-        /* XXX: validateDate uses platform time_t to represent time, 
-         * this breaks with long validity periods and 32-bit platforms.
-      } else if (!$x509->validateDate()) {
-        return null; */
       }
     }
 
-    $encodedKey = $cert['tbsCertificate']['subjectPublicKeyInfo']['subjectPublicKey'];
-    $rawKey = base64_decode($encodedKey);
-    $signing_key = U2F::pubkey_decode(substr(bin2hex($rawKey), 2));
-    if($signing_key == null) {
+    if(!openssl_pkey_get_public($pemCert)) {
       return new Error(ERR_PUBKEY_DECODE, "Decoding of public key failed");
     }
     $signature = substr($rawReg, $offs);
-    $sig = U2F::sig_decode($signature);
 
-    $sha256 = hash_init('sha256');
-    hash_update($sha256, chr(0));
-    hash_update($sha256, hash('sha256', $request->appId, true));
-    hash_update($sha256, hash('sha256', $clientData, true));
-    hash_update($sha256, $kh);
-    hash_update($sha256, $pubKey);
-    $hash = hash_final($sha256);
+    $dataToVerify  = chr(0);
+    $dataToVerify .= hash('sha256', $request->appId, true);
+    $dataToVerify .= hash('sha256', $clientData, true);
+    $dataToVerify .= $kh;
+    $dataToVerify .= $pubKey;
 
-    if($signing_key->verifies(gmp_strval(gmp_init($hash, 16), 10), $sig) == true) {
+    if(openssl_verify($dataToVerify, $signature, $pemCert, 'sha256') === 1) {
       return $registration;
     } else {
       return new Error(ERR_ATTESTATION_SIGNATURE, "Attestation signature does not match");
@@ -226,20 +210,19 @@ class U2F {
     if($reg === null) {
       return new Error(ERR_NO_MATCHING_REGISTRATION, "No matching registration found");
     }
-
-    $key = U2F::pubkey_decode(bin2hex(U2F::base64u_decode($reg->publicKey)));
-    if($key == null) {
+    $pemKey = U2F::pubkey_to_pem(U2F::base64u_decode($reg->publicKey));
+    if($pemKey == null) {
       return new Error(ERR_PUBKEY_DECODE, "Decoding of public key failed");
     }
+
     $signData = U2F::base64u_decode($response->signatureData);
     $clientData = U2f::base64u_decode($response->clientData);
-    $sha256 = hash_init('sha256');
-    hash_update($sha256, hash('sha256', $req->appId, true));
-    hash_update($sha256, substr($signData, 0, 5));
-    hash_update($sha256, hash('sha256', $clientData, true));
-    $hash = hash_final($sha256);
-    $sig = U2f::sig_decode(substr($signData, 5));
-    if($key->verifies(gmp_strval(gmp_init($hash, 16), 10), $sig) === true) {
+    $dataToVerify  = hash('sha256', $req->appId, true);
+    $dataToVerify .= substr($signData, 0, 5);
+    $dataToVerify .= hash('sha256', $clientData, true);
+    $signature = substr($signData, 5);
+
+    if(openssl_verify($dataToVerify, $signature, $pemKey, 'sha256') === 1) {
       $ctr = unpack("Nctr", substr($signData, 1, 4));
       $counter = $ctr['ctr'];
       if($counter > $reg->counter) {
@@ -253,19 +236,18 @@ class U2F {
     }
   }
 
-  private function setup_certs() {
-    $x509 = new File_X509();
+  private function get_certs() {
+    $files = array();
     $dir = $this->attestDir;
     if ($dir && $handle = opendir($dir)) {
       while(false !== ($entry = readdir($handle))) {
-        if($entry !== "." && $entry !== "..") {
-          $contents = file_get_contents("$dir/$entry");
-          $x509->loadCA($contents);
+        if(is_file("$dir/$entry")) {
+          $files[] = "$dir/$entry";
         }
       }
       closedir($handle);
     }
-    return $x509;
+    return $files;
   }
 
   private static function base64u_encode($data) {
@@ -276,25 +258,30 @@ class U2F {
     return base64_decode(strtr($data, '-_', '+/'));
   }
 
-  private static function sig_decode($signature) {
-    $asn1 = new File_ASN1();
-    $sig = $asn1->decodeBER($signature);
-    $r = $sig[0]['content'][0]['content'];
-    $s = $sig[0]['content'][1]['content'];
-    $gmpR = gmp_strval(gmp_init($r->toHex(), 16), 10);
-    $gmpS = gmp_strval(gmp_init($s->toHex(), 16), 10);
-    return new Signature($gmpR, $gmpS);
-  }
-
-  private static function pubkey_decode($key) {
-    if(substr($key, 0, 2) != "04") {
+  private static function pubkey_to_pem($key) {
+    if(strlen($key) != 65 || $key[0] != "\x04") {
       return null;
     }
-    $curve = EccFactory::getNistCurves()->generator256();
-    $x = gmp_strval(gmp_init(substr($key, 2, 64), 16), 10);
-    $y = gmp_strval(gmp_init(substr($key, 2+64, 64), 16), 10);
-    $adapter = EccFactory::getAdapter();
-    return new PublicKey($curve, new Point($curve->getCurve(), $x, $y, null, $adapter), $adapter);
+
+    /*
+     * Convert the public key to binary DER format first
+     * Using the ECC SubjectPublicKeyInfo OIDs from RFC 5480
+     *
+     *  SEQUENCE(2 elem)                        30 59
+     *   SEQUENCE(2 elem)                       30 13
+     *    OID1.2.840.10045.2.1 (id-ecPublicKey) 06 07 2a 86 48 ce 3d 02 01
+     *    OID1.2.840.10045.3.1.7 (secp256r1)    06 08 2a 86 48 ce 3d 03 01 07
+     *   BIT STRING(520 bit)                    03 42 ..key..
+     */
+    $der  = "\x30\x59\x30\x13\x06\x07\x2a\x86\x48\xce\x3d\x02\x01";
+    $der .= "\x06\x08\x2a\x86\x48\xce\x3d\x03\x01\x07\x03\x42";
+    $der .= "\0".$key;
+
+    $pem  = "-----BEGIN PUBLIC KEY-----\r\n";
+    $pem .= chunk_split(base64_encode($der), 64);
+    $pem .= "-----END PUBLIC KEY-----";
+
+    return $pem;
   }
 }
 
