@@ -92,7 +92,7 @@ class U2FTest extends \PHPUnit_Framework_TestCase {
     $req = json_decode('{"version":"U2F_V2","challenge":"5CBRhGBb2CXSum71GNREBGft7yz9g1jZO7JTkHGFsVY","appId":"http:\/\/demo.example.com"}');
     $resp = json_decode('{ "registrationData": "BQRX1gfcG-ofTlk9rjB9spsIMrmT9ba0DLto5fzk8FDB05ModNU2sWAqoQRemYiUrILQdbNGpN_aHA0_oq8kcd_XQCK-Ut0PWaOtz43t0aAV04U788e-dvpeqLtHxtINjgmutKM8_GJQ7F-3W0dogUjSANuRYRdkkSEHPcVdLSkpyfowggIbMIIBBaADAgECAgRAxBIlMAsGCSqGSIb3DQEBCzAuMSwwKgYDVQQDEyNZdWJpY28gVTJGIFJvb3QgQ0EgU2VyaWFsIDQ1NzIwMDYzMTAgFw0xNDA4MDEwMDAwMDBaGA8yMDUwMDkwNDAwMDAwMFowKjEoMCYGA1UEAwwfWXViaWNvIFUyRiBFRSBTZXJpYWwgMTA4NjU5MTUyNTBZMBMGByqGSM49AgEGCCqGSM49AwEHA0IABK2iSVV7KGNEdPE-oHGvobNnHVw6ZZ6vB3jNIYB1C4t32OucHzMweHqM5CAMSMDHtfp1vuJYaiQSk7jb6M48WtejEjAQMA4GCisGAQQBgsQKAQEEADALBgkqhkiG9w0BAQsDggEBAVg0BoEHEEp4LJLYPYFACRGS8WZiXkCA8crYLgGnzvfKXwPwyKJlUzYxxv5xoRrl5zjkIUXhZ4mnHZVsnj9EY_VGDuRRzKX7YtxTZpFZn7ej3abjLhckTkkQ_AhUkmP7VuK2AWLgYsS8ejGUqughBsKvh_84uxTAEr5BS-OGg2yi7UIjd8W0nOCc6EN8d_8wCiPOjt2Y_-TKpLLTXKszk4UnWNzRdxBThmBBprJBZbF1VyVRvJm5yRLBpth3G8KMvrt4Nu3Ecoj_Q154IJpWe1Dp1upDFLOG9nWCRQk25Y264k9BDISfqs-wHvUjIo2iDnKl5UVoauTWaT7M6KuEwl4wRAIgYUVjS_yTwJAtF35glSbf9Et-5tJzlHOeAqmbACd6pwsCIE0MkTR5XNQoO4XqDaUZCXmadWu8yU1gfE7AJI9JUUcc", "clientData": "eyAiY2hhbGxlbmdlIjogIjVDQlJoR0JiMkNYU3VtNzFHTlJFQkdmdDd5ejlnMWpaTzdKVGtIR0ZzVlkiLCAib3JpZ2luIjogImh0dHA6XC9cL2RlbW8uZXhhbXBsZS5jb20iLCAidHlwIjogIm5hdmlnYXRvci5pZC5maW5pc2hFbnJvbGxtZW50IiB9" }');
     $reg = $this->u2f->doRegister($req, $resp, true);
-    if($reg->errorCode) {
+    if(property_exists($reg, "errorCode")) {
       print_r($reg);
     }
     $this->assertEquals('Ir5S3Q9Zo63Pje3RoBXThTvzx752-l6ou0fG0g2OCa60ozz8YlDsX7dbR2iBSNIA25FhF2SRIQc9xV0tKSnJ-g', $reg->keyHandle);
