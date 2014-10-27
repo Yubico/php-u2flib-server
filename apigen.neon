@@ -6,3 +6,7 @@ source:
 exclude: "*/tests/*"
 
 groups: none
+
+tree: false
+
+title: php-u2flib-server API
