@@ -155,7 +155,7 @@ class U2F {
     $dataToVerify .= $kh;
     $dataToVerify .= $pubKey;
 
-    if(openssl_verify($dataToVerify, $signature, $pemCert, OPENSSL_ALGO_SHA256) === 1) {
+    if(openssl_verify($dataToVerify, $signature, $pemCert, 'sha256') === 1) {
       return $registration;
     } else {
       return new Error(ERR_ATTESTATION_SIGNATURE, "Attestation signature does not match");
@@ -222,7 +222,7 @@ class U2F {
     $dataToVerify .= hash('sha256', $clientData, true);
     $signature = substr($signData, 5);
 
-    if(openssl_verify($dataToVerify, $signature, $pemKey, OPENSSL_ALGO_SHA256) === 1) {
+    if(openssl_verify($dataToVerify, $signature, $pemKey, 'sha256') === 1) {
       $ctr = unpack("Nctr", substr($signData, 1, 4));
       $counter = $ctr['ctr'];
       if($counter > $reg->counter) {
