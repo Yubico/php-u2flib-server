@@ -269,32 +269,23 @@ class U2F {
   }
 
   private static function pubkey_to_pem($key) {
-    if(!strlen($key) || $key[0] != "\x04") {
+    if(strlen($key) != 65 || $key[0] != "\x04") {
       return null;
     }
 
-    /* RFC 5480 */
-    $asn1 = new File_ASN1();
-    $algMapping = array(
-      'type' => FILE_ASN1_TYPE_SEQUENCE,
-      'children' => array(
-        'algorithm' => array('type' => FILE_ASN1_TYPE_OBJECT_IDENTIFIER),
-        'parameters' => array('type' => FILE_ASN1_TYPE_OBJECT_IDENTIFIER)
-      )
-    );
-    $mapping = array(
-      'type' => FILE_ASN1_TYPE_SEQUENCE,
-      'children' => array(
-        'algorithm' => $algMapping,
-        'subjectPublicKey' => array('type' => FILE_ASN1_TYPE_BIT_STRING)
-      )
-    );
+    /*
+     * Convert the public key to binary DER format first
+     * Using the ECC SubjectPublicKeyInfo OIDs from RFC 5480
+     *
+     *  SEQUENCE(2 elem)                        30 59
+     *   SEQUENCE(2 elem)                       30 13
+     *    OID1.2.840.10045.2.1 (id-ecPublicKey) 06 07 2a 86 48 ce 3d 02 01
+     *    OID1.2.840.10045.3.1.7 (secp256r1)    06 08 2a 86 48 ce 3d 03 01 07
+     *   BIT STRING(520 bit)                    03 42 ..key..
+     */
+    $der  = hex2bin("3059301306072a8648ce3d020106082a8648ce3d0301070342");
+    $der .= "\0".$key;
 
-    $data['subjectPublicKey'] = base64_encode("\0".$key);
-    $data['algorithm']['algorithm'] = '1.2.840.10045.2.1'; /* id-ecPublicKey */
-    $data['algorithm']['parameters'] = '1.2.840.10045.3.1.7'; /* secp256r1 */
-
-    $der = $asn1->encodeDER($data, $mapping);
     $pem  = "-----BEGIN PUBLIC KEY-----\r\n";
     $pem .= chunk_split(base64_encode($der), 64);
     $pem .= "-----END PUBLIC KEY-----";
