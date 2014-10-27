@@ -30,9 +30,6 @@
 
 namespace u2flib_server;
 
-use \File_X509;
-use \File_ASN1;
-
 /** Constant for the version of the u2f protocol */
 const U2F_VERSION = "U2F_V2";
 
@@ -135,25 +132,19 @@ class U2F {
 
     $rawCert = substr($rawReg, $offs, $certLen);
     $offs += $certLen;
+    $pemCert  = "-----BEGIN CERTIFICATE-----\r\n";
+    $pemCert .= chunk_split(base64_encode($rawCert), 64);
+    $pemCert .= "-----END CERTIFICATE-----";
     if($include_cert) {
       $registration->certificate = base64_encode($rawCert);
     }
-    $x509 = $this->setup_certs();
-    $cert = $x509->loadX509($rawCert);
     if($this->attestDir) {
-      if(!$x509->validateSignature($cert)) {
+      if(openssl_x509_checkpurpose($pemCert, -1, $this->get_certs()) !== true) {
         return new Error(ERR_ATTESTATION_VERIFICATION, "Attestation certificate can not be validated");
-        /* XXX: validateDate uses platform time_t to represent time, 
-         * this breaks with long validity periods and 32-bit platforms.
-      } else if (!$x509->validateDate()) {
-        return null; */
       }
     }
 
-    $encodedKey = $cert['tbsCertificate']['subjectPublicKeyInfo']['subjectPublicKey'];
-    $rawKey = base64_decode($encodedKey);
-    $pemKey = U2F::pubkey_to_pem(substr($rawKey, 1));
-    if($pemKey == null) {
+    if(!openssl_pkey_get_public($pemCert)) {
       return new Error(ERR_PUBKEY_DECODE, "Decoding of public key failed");
     }
     $signature = substr($rawReg, $offs);
@@ -164,7 +155,7 @@ class U2F {
     $dataToVerify .= $kh;
     $dataToVerify .= $pubKey;
 
-    if(openssl_verify($dataToVerify, $signature, $pemKey, OPENSSL_ALGO_SHA256) === 1) {
+    if(openssl_verify($dataToVerify, $signature, $pemCert, OPENSSL_ALGO_SHA256) === 1) {
       return $registration;
     } else {
       return new Error(ERR_ATTESTATION_SIGNATURE, "Attestation signature does not match");
@@ -245,19 +236,18 @@ class U2F {
     }
   }
 
-  private function setup_certs() {
-    $x509 = new File_X509();
+  private function get_certs() {
+    $files = array();
     $dir = $this->attestDir;
     if ($dir && $handle = opendir($dir)) {
       while(false !== ($entry = readdir($handle))) {
-        if($entry !== "." && $entry !== "..") {
-          $contents = file_get_contents("$dir/$entry");
-          $x509->loadCA($contents);
+        if(is_file("$dir/$entry")) {
+          $files[] = "$dir/$entry";
         }
       }
       closedir($handle);
     }
-    return $x509;
+    return $files;
   }
 
   private static function base64u_encode($data) {

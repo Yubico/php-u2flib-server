@@ -8,7 +8,6 @@
     "url":"https://github.com/mdanter/phpecc"
   } ],
   "require": {
-    "phpseclib/phpseclib":"0.3.*",
     "ext-openssl":"*"
   },
   "autoload": {
