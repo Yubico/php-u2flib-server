@@ -52,7 +52,7 @@ const ERR_ATTESTATION_VERIFICATION = 6;
 /** Error for not getting good random from the system */
 const ERR_BAD_RANDOM = 7;
 /** Error when the counter is lower than expected */
-const ERR_COUNTER_TO_LOW = 8;
+const ERR_COUNTER_TOO_LOW = 8;
 /** Error decoding public key */
 const ERR_PUBKEY_DECODE = 9;
 
@@ -229,7 +229,7 @@ class U2F {
         $reg->counter = $counter;
         return $reg;
       } else {
-        return new Error(ERR_COUNTER_TO_LOW, "Counter to low.");
+        return new Error(ERR_COUNTER_TOO_LOW, "Counter too low.");
       }
     } else {
       return new Error(ERR_AUTHENTICATION_FAILURE, "Authentication failed");
