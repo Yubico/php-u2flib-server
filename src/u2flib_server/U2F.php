@@ -192,8 +192,10 @@ class U2F {
   public function doAuthenticate($requests, $registrations, $response) {
     $req = null;
     $reg = null;
+    $clientData = U2f::base64u_decode($response->clientData);
+    $decodedClient = json_decode($clientData);
     foreach ($requests as $req) {
-      if($req->keyHandle === $response->keyHandle) {
+      if($req->keyHandle === $response->keyHandle && $req->challenge === $decodedClient->challenge) {
         break;
       }
       $req = null;
@@ -216,7 +218,6 @@ class U2F {
     }
 
     $signData = U2F::base64u_decode($response->signatureData);
-    $clientData = U2f::base64u_decode($response->clientData);
     $dataToVerify  = hash('sha256', $req->appId, true);
     $dataToVerify .= substr($signData, 0, 5);
     $dataToVerify .= hash('sha256', $clientData, true);
