@@ -188,6 +188,11 @@ class U2F {
    * @param array An array of current registrations
    * @param SignResponse A response from the authenticator
    * @return Registration|Error
+   *
+   * The Registration object returned on success contains an updated counter
+   * that should be saved for future authentications.
+   * If the Error returned is ERR_COUNTER_TOO_LOW this is an indication of
+   * token cloning or similar and appropriate action should be taken.
    */
   public function doAuthenticate($requests, $registrations, $response) {
     $req = null;
@@ -226,6 +231,7 @@ class U2F {
     if(openssl_verify($dataToVerify, $signature, $pemKey, 'sha256') === 1) {
       $ctr = unpack("Nctr", substr($signData, 1, 4));
       $counter = $ctr['ctr'];
+      /* TODO: wrap-around should be handled somehow.. */
       if($counter > $reg->counter) {
         $reg->counter = $counter;
         return $reg;
