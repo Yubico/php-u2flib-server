@@ -2,9 +2,6 @@
 
 require_once('../../vendor/autoload.php');
 
-const TYPE_REG = 1;
-const TYPE_AUTH = 2;
-
 $dbfile = '/var/tmp/u2f-pdo.sqlite';
 
 $pdo = new PDO("sqlite:$dbfile");
