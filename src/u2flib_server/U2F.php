@@ -75,20 +75,20 @@ class U2F {
   /**
    * Called to get a registration request to send to a user.
    * Returns an array of one registration request and a array of sign requests.
-   * @param array $keyhandles optional list of current key handles for this
+   * @param array $registrations optional list of current registrations for this
    * user, to prevent the user from registering the same authenticator serveral
    * times.
    * @return array|Error An array of two elements, the first containing a
    * RegisterRequest the second being an array of SignRequest
    */
-  public function getRegisterData($keyHandles = array()) {
+  public function getRegisterData($registrations = array()) {
     $challenge = U2F::base64u_encode(openssl_random_pseudo_bytes(32, $crypto_strong));
     if($crypto_strong != true) {
       $error = new Error(ERR_BAD_RANDOM, "Unable to obtain a good source of randomness");
       return $error;
     }
     $request = new RegisterRequest($challenge, $this->appId);
-    $signs = $this->getAuthenticateData($keyHandles);
+    $signs = $this->getAuthenticateData($registrations);
     return array($request, $signs);
   }
 
