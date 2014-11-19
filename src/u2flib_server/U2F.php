@@ -84,8 +84,7 @@ class U2F {
   public function getRegisterData($registrations = array()) {
     $challenge = U2F::base64u_encode(openssl_random_pseudo_bytes(32, $crypto_strong));
     if($crypto_strong != true) {
-      $error = new Error(ERR_BAD_RANDOM, "Unable to obtain a good source of randomness");
-      return $error;
+      throw new Error('Unable to obtain a good source of randomness', ERR_BAD_RANDOM );
     }
     $request = new RegisterRequest($challenge, $this->appId);
     $signs = $this->getAuthenticateData($registrations);
@@ -107,7 +106,7 @@ class U2F {
     $cli = json_decode($clientData);
 
     if($cli->challenge !== $request->challenge) {
-      return new Error(ERR_UNMATCHED_CHALLENGE, "Registration challenge does not match");
+      throw new Error('Registration challenge does not match', ERR_UNMATCHED_CHALLENGE );
     }
 
     $registration = new Registration();
@@ -117,7 +116,7 @@ class U2F {
     // decode the pubKey to make sure it's good
     $tmpkey = U2F::pubkey_to_pem($pubKey);
     if($tmpkey == null) {
-      return new Error(ERR_PUBKEY_DECODE, "Decoding of public key failed");
+      throw new Error('Decoding of public key failed', ERR_PUBKEY_DECODE );
     }
     $registration->publicKey = base64_encode($pubKey);
     $khLen = $regData[$offs++];
@@ -140,12 +139,12 @@ class U2F {
     }
     if($this->attestDir) {
       if(openssl_x509_checkpurpose($pemCert, -1, $this->get_certs()) !== true) {
-        return new Error(ERR_ATTESTATION_VERIFICATION, "Attestation certificate can not be validated");
+        throw new Error('Attestation certificate can not be validated', ERR_ATTESTATION_VERIFICATION );
       }
     }
 
     if(!openssl_pkey_get_public($pemCert)) {
-      return new Error(ERR_PUBKEY_DECODE, "Decoding of public key failed");
+      throw new Error('Decoding of public key failed', ERR_PUBKEY_DECODE );
     }
     $signature = substr($rawReg, $offs);
 
@@ -158,7 +157,7 @@ class U2F {
     if(openssl_verify($dataToVerify, $signature, $pemCert, 'sha256') === 1) {
       return $registration;
     } else {
-      return new Error(ERR_ATTESTATION_SIGNATURE, "Attestation signature does not match");
+      throw new Error('Attestation signature does not match', ERR_ATTESTATION_SIGNATURE );
     }
   }
 
@@ -175,7 +174,7 @@ class U2F {
       $sig->keyHandle = $reg->keyHandle;
       $sig->challenge = U2F::base64u_encode(openssl_random_pseudo_bytes(32, $crypto_strong));
       if($crypto_strong != true) {
-        return new Error(ERR_BAD_RANDOM, "Unable to obtain a good source of randomness");
+        throw new Error('Unable to obtain a good source of randomness', ERR_BAD_RANDOM );
       }
       $sigs[] = $sig;
     }
@@ -206,7 +205,7 @@ class U2F {
       $req = null;
     }
     if($req === null) {
-      return new Error(ERR_NO_MATCHING_REQUEST, "No matching request found");
+      throw new Error('No matching request found', ERR_NO_MATCHING_REQUEST );
     }
     foreach ($registrations as $reg) {
       if($reg->keyHandle === $response->keyHandle) {
@@ -215,11 +214,11 @@ class U2F {
       $reg = null;
     }
     if($reg === null) {
-      return new Error(ERR_NO_MATCHING_REGISTRATION, "No matching registration found");
+      throw new Error('No matching registration found', ERR_NO_MATCHING_REGISTRATION );
     }
     $pemKey = U2F::pubkey_to_pem(U2F::base64u_decode($reg->publicKey));
     if($pemKey == null) {
-      return new Error(ERR_PUBKEY_DECODE, "Decoding of public key failed");
+      throw new Error('Decoding of public key failed', ERR_PUBKEY_DECODE );
     }
 
     $signData = U2F::base64u_decode($response->signatureData);
@@ -236,10 +235,10 @@ class U2F {
         $reg->counter = $counter;
         return $reg;
       } else {
-        return new Error(ERR_COUNTER_TOO_LOW, "Counter too low.");
+        throw new Error('Counter too low.', ERR_COUNTER_TOO_LOW );
       }
     } else {
-      return new Error(ERR_AUTHENTICATION_FAILURE, "Authentication failed");
+      throw new Error('Authentication failed', ERR_AUTHENTICATION_FAILURE );
     }
   }
 
@@ -333,17 +332,7 @@ class Registration {
 }
 
 /** Error class, returned on errors */
-class Error {
-  /** code for the error */
-  public $errorCode;
-  /** readable error message */
-  public $errorMessage;
-
-  /** @internal */
-  public function __construct($code, $message) {
-    $this->errorCode = $code;
-    $this->errorMessage = $message;
-  }
+class Error extends \Exception {
 }
 
 ?>
