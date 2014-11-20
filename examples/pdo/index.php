@@ -102,16 +102,16 @@ if($_SERVER['REQUEST_METHOD'] === 'POST') {
     $user = createAndGetUser($_POST['username']);
 
     if(isset($_POST['action'])) {
-      if($_POST['action'] === 'register') {
-        $data = $u2f->getRegisterData(getRegs($user->id));
-        if(property_exists($data, "errorCode")) {
-          echo "alert('error: " . $data->errorMessage . "');";
-        } else {
-          list($req,$sigs) = $data;
-          $_SESSION['regReq'] = json_encode($req);
-          echo "var req = " . json_encode($req) . ";";
-          echo "var sigs = " . json_encode($sigs) . ";";
-          echo "var username = '" . $user->name . "';";
+      switch($_POST['action']):
+        case 'register':
+          try {
+            $data = $u2f->getRegisterData(getRegs($user->id));
+
+            list($req,$sigs) = $data;
+            $_SESSION['regReq'] = json_encode($req);
+            echo "var req = " . json_encode($req) . ";";
+            echo "var sigs = " . json_encode($sigs) . ";";
+            echo "var username = '" . $user->name . "';";
 ?>
         setTimeout(function() {
             console.log("Register: ", req);
@@ -130,15 +130,19 @@ if($_SERVER['REQUEST_METHOD'] === 'POST') {
             });
         }, 1000);
 <?php
-        }
-      } else if($_POST['action'] === 'authenticate') {
-        $reqs = json_encode($u2f->getAuthenticateData(getRegs($user->id)));
-        if(property_exists($reqs, "errorCode")) {
-          echo "alert('error: " . $reqs->errorMessage . "');";
-        } else {
-          $_SESSION['authReq'] = $reqs;
-          echo "var req = $reqs;";
-          echo "var username = '" . $user->name . "';";
+          } catch( Exception $e ) {
+            echo "alert('error: " . $e->getMessage() . "');";
+          }
+
+          break;
+
+        case 'authenticate':
+          try {
+            $reqs = json_encode($u2f->getAuthenticateData(getRegs($user->id)));
+
+            $_SESSION['authReq'] = $reqs;
+            echo "var req = $reqs;";
+            echo "var username = '" . $user->name . "';";
 ?>
         setTimeout(function() {
             console.log("sign: ", req);
@@ -153,24 +157,31 @@ if($_SERVER['REQUEST_METHOD'] === 'POST') {
             });
         }, 1000);
 <?php
-        }
-      }
+          } catch( Exception $e ) {
+            echo "alert('error: " . $e->getMessage() . "');";
+          }
+
+          break;
+
+      endswitch;
     } else if($_POST['register2']) {
-      $reg = $u2f->doRegister(json_decode($_SESSION['regReq']), json_decode($_POST['register2']));
-      $_SESSION['regReq'] = null;
-      if(property_exists($reg, "errorCode")) {
-        echo "alert('error: " . $reg->errorMessage . "');";
-      } else {
+      try {
+        $reg = $u2f->doRegister(json_decode($_SESSION['regReq']), json_decode($_POST['register2']));
         addReg($user->id, $reg);
+      } catch( Exception $e ) {
+        echo "alert('error: " . $e->getMessage() . "');";
+      } finally {
+        $_SESSION['regReq'] = null;
       }
     } else if($_POST['authenticate2']) {
-      $reg = $u2f->doAuthenticate(json_decode($_SESSION['authReq']), getRegs($user->id), json_decode($_POST['authenticate2']));
-      $_SESSION['authReq'] = null;
-      if(property_exists($reg, "errorCode")) {
-        echo "alert('error: " . $reg->errorMessage . "');";
-      } else {
+      try {
+        $reg = $u2f->doAuthenticate(json_decode($_SESSION['authReq']), getRegs($user->id), json_decode($_POST['authenticate2']));
         updateReg($reg);
         echo "alert('success: " . $reg->counter . "');";
+      } catch( Exception $e ) {
+        echo "alert('error: " . $e->getMessage() . "');";
+      } finally {
+        $_SESSION['authReq'] = null;
       }
     }
   }
