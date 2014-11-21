@@ -56,6 +56,9 @@ const ERR_COUNTER_TOO_LOW = 8;
 /** Error decoding public key */
 const ERR_PUBKEY_DECODE = 9;
 
+/** Error user-agent returned error */
+const ERR_BAD_UA_RETURNING = 10;
+
 /** @internal */
 const PUBKEY_LEN = 65;
 
@@ -109,6 +112,10 @@ class U2F {
 
     if( !is_object( $response ) ) {
     	throw new \InvalidArgumentException('$response of doRegister() method only accepts object.');
+    }
+
+    if( property_exists( $response, 'errorCode') ) {
+    	throw new Error('User-agent returned error. Error code: ' . $response->errorCode, ERR_BAD_UA_RETURNING );
     }
 
     if( !is_bool( $include_cert ) ) {
@@ -226,6 +233,10 @@ class U2F {
 
     if( !is_object( $response ) ) {
     	throw new \InvalidArgumentException('$response of doAuthenticate() method only accepts object.');
+    }
+
+    if( property_exists( $response, 'errorCode') ) {
+    	throw new Error('User-agent returned error. Error code: ' . $response->errorCode, ERR_BAD_UA_RETURNING );
     }
 
     $req = null;
