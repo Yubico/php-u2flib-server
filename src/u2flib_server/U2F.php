@@ -31,7 +31,7 @@
 namespace u2flib_server;
 
 /** Constant for the version of the u2f protocol */
-const U2F_VERSION = "U2F_V2";
+const U2F_VERSION = 'U2F_V2';
 
 /** Error for the authentication message not matching any outstanding
  * authentication request */
@@ -93,7 +93,7 @@ class U2F {
 		$challenge = U2F::base64u_encode( openssl_random_pseudo_bytes(32, $crypto_strong ) );
 
 		if( $crypto_strong != true ) {
-			return new Error( ERR_BAD_RANDOM, "Unable to obtain a good source of randomness");
+			return new Error( ERR_BAD_RANDOM, 'Unable to obtain a good source of randomness');
 		}
 
 		$request = new RegisterRequest( $challenge, $this->appId );
@@ -117,7 +117,7 @@ class U2F {
 		$cli        = json_decode( $clientData );
 
 		if( $cli->challenge !== $request->challenge ) {
-			return new Error( ERR_UNMATCHED_CHALLENGE, "Registration challenge does not match");
+			return new Error( ERR_UNMATCHED_CHALLENGE, 'Registration challenge does not match');
 		}
 
 		$registration = new Registration();
@@ -129,7 +129,7 @@ class U2F {
 		$tmpkey = U2F::pubkey_to_pem( $pubKey );
 
 		if( $tmpkey == null ) {
-			return new Error( ERR_PUBKEY_DECODE, "Decoding of public key failed");
+			return new Error( ERR_PUBKEY_DECODE, 'Decoding of public key failed');
 		}
 
 		$registration->publicKey = base64_encode( $pubKey );
@@ -155,12 +155,12 @@ class U2F {
 
 		if( $this->attestDir ) {
 			if( openssl_x509_checkpurpose( $pemCert, -1, $this->get_certs() ) !== true ) {
-				return new Error( ERR_ATTESTATION_VERIFICATION, "Attestation certificate can not be validated");
+				return new Error( ERR_ATTESTATION_VERIFICATION, 'Attestation certificate can not be validated');
 			}
 		}
 
 		if( !openssl_pkey_get_public( $pemCert ) ) {
-			return new Error( ERR_PUBKEY_DECODE, "Decoding of public key failed");
+			return new Error( ERR_PUBKEY_DECODE, 'Decoding of public key failed');
 		}
 
 		$signature = substr( $rawReg, $offs );
@@ -174,7 +174,7 @@ class U2F {
 		if( openssl_verify( $dataToVerify, $signature, $pemCert, 'sha256') === 1 ) {
 			return $registration;
 		} else {
-			return new Error( ERR_ATTESTATION_SIGNATURE, "Attestation signature does not match");
+			return new Error( ERR_ATTESTATION_SIGNATURE, 'Attestation signature does not match');
 		}
 	}
 
@@ -193,7 +193,7 @@ class U2F {
 			$sig->challenge = U2F::base64u_encode( openssl_random_pseudo_bytes(32, $crypto_strong ) );
 
 			if( $crypto_strong != true ) {
-				return new Error( ERR_BAD_RANDOM, "Unable to obtain a good source of randomness");
+				return new Error( ERR_BAD_RANDOM, 'Unable to obtain a good source of randomness');
 			}
 
 			$sigs[] = $sig;
@@ -229,7 +229,7 @@ class U2F {
 		}
 
 		if( $req === null ) {
-			return new Error( ERR_NO_MATCHING_REQUEST, "No matching request found");
+			return new Error( ERR_NO_MATCHING_REQUEST, 'No matching request found');
 		}
 
 		foreach ( $registrations as $reg ) {
@@ -241,13 +241,13 @@ class U2F {
 		}
 
 		if( $reg === null ) {
-			return new Error( ERR_NO_MATCHING_REGISTRATION, "No matching registration found");
+			return new Error( ERR_NO_MATCHING_REGISTRATION, 'No matching registration found');
 		}
 
 		$pemKey = U2F::pubkey_to_pem( U2F::base64u_decode( $reg->publicKey ) );
 
 		if( $pemKey == null ) {
-			return new Error( ERR_PUBKEY_DECODE, "Decoding of public key failed");
+			return new Error( ERR_PUBKEY_DECODE, 'Decoding of public key failed');
 		}
 
 		$signData      = U2F::base64u_decode( $response->signatureData );
@@ -257,7 +257,7 @@ class U2F {
 		$signature     = substr( $signData, 5);
 
 		if( openssl_verify( $dataToVerify, $signature, $pemKey, 'sha256') === 1 ) {
-			$ctr = unpack("Nctr", substr( $signData, 1, 4) );
+			$ctr = unpack('Nctr', substr( $signData, 1, 4) );
 			$counter = $ctr['ctr'];
 
 			/* TODO: wrap-around should be handled somehow.. */
@@ -265,10 +265,10 @@ class U2F {
 				$reg->counter = $counter;
 				return $reg;
 			} else {
-				return new Error( ERR_COUNTER_TOO_LOW, "Counter too low.");
+				return new Error( ERR_COUNTER_TOO_LOW, 'Counter too low.');
 			}
 		} else {
-			return new Error( ERR_AUTHENTICATION_FAILURE, "Authentication failed");
+			return new Error( ERR_AUTHENTICATION_FAILURE, 'Authentication failed');
 		}
 	}
 
