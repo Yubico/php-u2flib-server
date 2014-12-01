@@ -3,19 +3,12 @@ php-u2flib-server NEWS -- History of user-visible changes.
 * Version 0.0.3 (unreleased)
 
 * Version 0.0.2 (released 2014-10-24)
-
-** Refactor the API to return objects instead of encoded objects.
-
-** Add a second example that uses PDO to store registrations.
-
-** Add documentation to the API.
-
-** Check that randomness returned is good.
-
-** Drop the unneeded mcrypt extension.
-
-** More tests.
+ ** Refactor the API to return objects instead of encoded objects.
+ ** Add a second example that uses PDO to store registrations.
+ ** Add documentation to the API.
+ ** Check that randomness returned is good.
+ ** Drop the unneeded mcrypt extension.
+ ** More tests.
 
 * Version 0.0.1 (released 2014-10-16)
-
-** Initial release.
+ ** Initial release.
