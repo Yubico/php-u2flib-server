@@ -82,10 +82,9 @@ class U2F {
    * RegisterRequest the second being an array of SignRequest
    */
   public function getRegisterData($registrations = array()) {
-    $challenge = U2F::base64u_encode(openssl_random_pseudo_bytes(32, $crypto_strong));
-    if($crypto_strong != true) {
-      $error = new Error(ERR_BAD_RANDOM, "Unable to obtain a good source of randomness");
-      return $error;
+    $challenge = U2F::createChallenge();
+    if( is_object( $challenge ) ) {
+      return $challenge;
     }
     $request = new RegisterRequest($challenge, $this->appId);
     $signs = $this->getAuthenticateData($registrations);
@@ -173,9 +172,9 @@ class U2F {
       $sig = new SignRequest();
       $sig->appId = $this->appId;
       $sig->keyHandle = $reg->keyHandle;
-      $sig->challenge = U2F::base64u_encode(openssl_random_pseudo_bytes(32, $crypto_strong));
-      if($crypto_strong != true) {
-        return new Error(ERR_BAD_RANDOM, "Unable to obtain a good source of randomness");
+      $sig->challenge = U2F::createChallenge();
+      if( is_object( $sig->challenge ) ) {
+        return $sig->challenge;
       }
       $sigs[] = $sig;
     }
@@ -289,6 +288,17 @@ class U2F {
     $pem .= "-----END PUBLIC KEY-----";
 
     return $pem;
+  }
+
+  private static function createChallenge() {
+  	$challenge = openssl_random_pseudo_bytes(32, $crypto_strong );
+  	if( $crypto_strong != true ) {
+  		return new Error( ERR_BAD_RANDOM, 'Unable to obtain a good source of randomness');
+  	}
+
+  	$challenge = U2F::base64u_encode( $challenge );
+
+  	return $challenge;
   }
 }
 
