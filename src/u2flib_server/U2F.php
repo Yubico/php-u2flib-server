@@ -75,11 +75,12 @@ class U2F {
   /**
    * Called to get a registration request to send to a user.
    * Returns an array of one registration request and a array of sign requests.
-   * @param array $registrations optional list of current registrations for this
+   * @param array optional list of current registrations for this
    * user, to prevent the user from registering the same authenticator serveral
    * times.
-   * @return array|Error An array of two elements, the first containing a
+   * @return array An array of two elements, the first containing a
    * RegisterRequest the second being an array of SignRequest
+   * @throws Error
    */
   public function getRegisterData($registrations = array()) {
     $challenge = U2F::createChallenge();
@@ -94,7 +95,8 @@ class U2F {
    * @param RegisterResponse response from a user
    * @param bool set to true if the attestation certificate should be
    * included in the returned Registration object
-   * @return Registration|Error
+   * @return Registration
+   * @throws Error
    */
   public function doRegister($request, $response, $include_cert = true) {
     $rawReg =  U2F::base64u_decode($response->registrationData);
@@ -161,7 +163,8 @@ class U2F {
   /**
    * Called to get an authentication request.
    * @param array An array of the registrations to create authentication requests for.
-   * @return array|Error An array of SignRequest
+   * @return array An array of SignRequest
+   * @throws Error
    */
   public function getAuthenticateData($registrations) {
     $sigs = array();
@@ -180,7 +183,8 @@ class U2F {
    * @param array An array of outstanding authentication requests
    * @param array An array of current registrations
    * @param SignResponse A response from the authenticator
-   * @return Registration|Error
+   * @return Registration
+   * @throws Error
    *
    * The Registration object returned on success contains an updated counter
    * that should be saved for future authentications.
