@@ -102,21 +102,16 @@ if($_SERVER['REQUEST_METHOD'] === 'POST') {
         }, 1000);
 <?php
     } else if($_POST['doRegister']) {
-        $data = $u2f->doRegister(json_decode($_POST['request']), json_decode($_POST['doRegister']));
-        echo "var error = '';\nvar registration = '';\n";
-        if(property_exists($data, 'errorMessage')) {
-            echo "error = '" . $data->errorMessage . "'\n";
-        } else {
-            echo "registration = '" . json_encode($data) . "';\n";
-        }
+        try {
+            $data = $u2f->doRegister(json_decode($_POST['request']), json_decode($_POST['doRegister']));
+            echo "var registration = '" . json_encode($data) . "';\n";
 ?>
-        if(registration != "") {
             addRegistration(registration);
             alert("registration successful!");
-        } else {
-            alert("registration failed: " + error);
-        }
 <?php
+        } catch(u2flib_server\Error $e) {
+            echo "alert('error:" . $e->getMessage() . "'\n";
+        }
     } else if(isset($_POST['startAuthenticate'])) {
         $regs = json_decode($_POST['registrations']);
         $data = $u2f->getAuthenticateData($regs);
@@ -141,20 +136,12 @@ if($_SERVER['REQUEST_METHOD'] === 'POST') {
     } else if($_POST['doAuthenticate']) {
         $reqs = json_decode($_POST['request']);
         $regs = json_decode($_POST['registrations']);
-        $data = $u2f->doAuthenticate($reqs, $regs, json_decode($_POST['doAuthenticate']));
-        echo "var auth = '';\nvar error = '';\n";
-        if(property_exists($data, 'counter')) {
-            echo "auth = '" . $data->counter . "';\n";
-        } else {
-            echo "error = '" . $data->errorMessage . "';\n";
+        try {
+            $data = $u2f->doAuthenticate($reqs, $regs, json_decode($_POST['doAuthenticate']));
+            echo "alert('Authentication successful, counter:" . $data->counter . "';\n";
+        } catch(u2flib_server\Error $e) {
+            echo "alert('error:" . $e->getMessage() . "'\n";
         }
-?>
-        if(auth != "") {
-            alert('Authentication successful, counter:' + auth);
-        } else {
-            alert('Authentication failed: ' + error);
-        }
-<?php
     }
 }
 ?>
