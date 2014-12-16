@@ -3,15 +3,8 @@
   "description":"Library for U2F implementation",
   "homepage":"https://developers.yubico.com/php-u2flib-server",
   "license":"BSD-2-Clause",
-  "repositories": [ {
-    "type":"git",
-    "url":"https://github.com/mdanter/phpecc"
-  } ],
   "require": {
     "ext-openssl":"*"
-  },
-  "autoload": {
-    "classmap": ["src/"]
   }
 }
 
