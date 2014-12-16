@@ -29,7 +29,7 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-require_once('vendor/autoload.php');
+require_once('src/u2flib_server/U2F.php');
 
 class U2FTest extends \PHPUnit_Framework_TestCase {
 
