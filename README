@@ -16,10 +16,10 @@ closed interval.
 
 === Dependencies ===
 
-Dependencies are managed with link:https://getcomposer.org[composer].
-To setup dependencies when composer is available, run:
+The only dependency is the openssl extension to PHP that has to be enabled.
 
- $ composer.phar install
+A composer.json is included in the distribution to make things simpler for
+other project using composer.
 
 === Tests ===
 
