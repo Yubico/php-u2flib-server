@@ -49,6 +49,7 @@ class U2FTest extends \PHPUnit_Framework_TestCase {
 
   /**
    * @expectedException \InvalidArgumentException
+   * @expectedExceptionMessage $registrations of getRegisterData() method only accepts array.
    */
   public function testGetRegisterDataInvalidRegistrations() {
     list($reg, $signData) = $this->u2f->getRegisterData('foo');
@@ -135,6 +136,7 @@ class U2FTest extends \PHPUnit_Framework_TestCase {
 
   /**
    * @expectedException \InvalidArgumentException
+   * @expectedExceptionMessage $request of doRegister() method only accepts object.
    */
   public function testDoRegisterInvalidRequest() {
     $req = 'request';
@@ -144,6 +146,7 @@ class U2FTest extends \PHPUnit_Framework_TestCase {
 
   /**
    * @expectedException \InvalidArgumentException
+   * @expectedExceptionMessage $response of doRegister() method only accepts object.
    */
   public function testDoRegisterInvalidResponse() {
     $req = json_decode('{"version":"U2F_V2","challenge":"yKA0x075tjJ-GE7fKTfnzTOSaNUOWQxRd9TWz5aFOg8","appId":"http://demo.example.com"}');
@@ -153,6 +156,7 @@ class U2FTest extends \PHPUnit_Framework_TestCase {
 
   /**
    * @expectedException \InvalidArgumentException
+   * @expectedExceptionMessage $include_cert of doRegister() method only accepts boolean.
    */
   public function testDoRegisterInvalidInclude_cert() {
     $req = json_decode('{"version":"U2F_V2","challenge":"yKA0x075tjJ-GE7fKTfnzTOSaNUOWQxRd9TWz5aFOg8","appId":"http://demo.example.com"}');
@@ -172,6 +176,7 @@ class U2FTest extends \PHPUnit_Framework_TestCase {
 
   /**
    * @expectedException \InvalidArgumentException
+   * @expectedExceptionMessage $registrations of getAuthenticateData() method only accepts array.
    */
   public function testGetAuthenticateDataInvalidRegistrations() {
     $regs = 'registrations';
@@ -180,6 +185,7 @@ class U2FTest extends \PHPUnit_Framework_TestCase {
 
   /**
    * @expectedException \InvalidArgumentException
+   * @expectedExceptionMessage $registrations of getAuthenticateData() method only accepts array of object.
    */
   public function testGetAuthenticateDataInvalidRegistrations2() {
     $regs = array('YubiKey NEO', 'YubiKey Standard');
@@ -251,6 +257,7 @@ class U2FTest extends \PHPUnit_Framework_TestCase {
 
   /**
    * @expectedException \InvalidArgumentException
+   * @expectedExceptionMessage $requests of doAuthenticate() method only accepts array.
    */
   public function testDoAuthenticateInvalidRequests() {
     $reqs = 'Requests';
@@ -261,6 +268,7 @@ class U2FTest extends \PHPUnit_Framework_TestCase {
 
   /**
    * @expectedException \InvalidArgumentException
+   * @expectedExceptionMessage $requests of doAuthenticate() method only accepts array of object.
    */
   public function testDoAuthenticateInvalidRequests2() {
     $reqs = array('YubiKey NEO', 'YubiKey Standard');
@@ -271,6 +279,7 @@ class U2FTest extends \PHPUnit_Framework_TestCase {
 
   /**
    * @expectedException \InvalidArgumentException
+   * @expectedExceptionMessage $registrations of doAuthenticate() method only accepts array.
    */
   public function testDoAuthenticateInvalidRegistrations() {
     $reqs = array(json_decode('{"version":"U2F_V2","challenge":"fEnc9oV79EaBgK5BoNERU5gPKM2XGYWrz4fUjgc0Q7g","keyHandle":"CTUayZo8hCBeC-sGQJChC0wW-bBg99bmOlGCgw8XGq4dLsxO3yWh9mRYArZxocP5hBB1pEGB3bbJYiM-5acc5w","appId":"http://demo.example.com"}'));
@@ -281,6 +290,7 @@ class U2FTest extends \PHPUnit_Framework_TestCase {
 
   /**
    * @expectedException \InvalidArgumentException
+   * @expectedExceptionMessage $registrations of doAuthenticate() method only accepts array of object.
    */
   public function testDoAuthenticateInvalidRegistrations2() {
     $reqs = array(json_decode('{"version":"U2F_V2","challenge":"fEnc9oV79EaBgK5BoNERU5gPKM2XGYWrz4fUjgc0Q7g","keyHandle":"CTUayZo8hCBeC-sGQJChC0wW-bBg99bmOlGCgw8XGq4dLsxO3yWh9mRYArZxocP5hBB1pEGB3bbJYiM-5acc5w","appId":"http://demo.example.com"}'));
@@ -291,6 +301,7 @@ class U2FTest extends \PHPUnit_Framework_TestCase {
 
   /**
    * @expectedException \InvalidArgumentException
+   * @expectedExceptionMessage $response of doAuthenticate() method only accepts object.
    */
   public function testDoAuthenticateInvalidResponse() {
     $reqs = array(json_decode('{"version":"U2F_V2","challenge":"fEnc9oV79EaBgK5BoNERU5gPKM2XGYWrz4fUjgc0Q7g","keyHandle":"CTUayZo8hCBeC-sGQJChC0wW-bBg99bmOlGCgw8XGq4dLsxO3yWh9mRYArZxocP5hBB1pEGB3bbJYiM-5acc5w","appId":"http://demo.example.com"}'));
