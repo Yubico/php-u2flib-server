@@ -217,7 +217,7 @@ class U2F {
    */
   public function doAuthenticate($requests, $registrations, $response) {
     if( !is_array( $requests ) ) {
-    	throw new \InvalidArgumentException('$requestns of doAuthenticate() method only accepts array.');
+    	throw new \InvalidArgumentException('$requests of doAuthenticate() method only accepts array.');
     }
 
     if( !is_array( $registrations ) ) {
