@@ -5,6 +5,9 @@
   "license":"BSD-2-Clause",
   "require": {
     "ext-openssl":"*"
+  },
+  "autoload": {
+    "classmap": ["src/"]
   }
 }
 
