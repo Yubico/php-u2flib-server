@@ -9,9 +9,9 @@ php:
 after_success:
   - test -z $COVERALLS || (composer require satooshi/php-coveralls && vendor/bin/coveralls -v)
 matrix:
-    include:
-      - php: 5.6
-        env: COVERALLS=true
+  include:
+    - php: 5.6
+      env: COVERALLS=true
   allow_failures:
     - php: hhvm
     - php: hhvm-nightly
