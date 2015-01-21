@@ -66,6 +66,15 @@ class U2F {
   private $appId;
   private $attestDir;
 
+  /** @internal */
+  private static $FIXCERTS = array(
+    '349bca1031f8c82c4ceca38b9cebf1a69df9fb3b94eed99eb3fb9aa3822d26e8',
+    'dd574527df608e47ae45fbba75a2afdd5c20fd94a02419381813cd55a2a3398f',
+    '1d8764f0f7cd1352df6150045c8f638e517270e8b5dda1c63ade9c2280240cae',
+    'd0edc9a91a1677435a953390865d208c55b3183c6759c9b5a7ff494c322558eb',
+    '6073c436dcd064a48127ddbf6032ac1a66fd59a0c24434f070d4e564c124c897',
+    'bf7c85b03bcfce62c31d898c82bdcf0fed0d77656965100447aa31899740f598');
+
   /**
    * @param string Application id for the running application
    * @param string Directory where trusted attestation roots may be found
@@ -151,7 +160,7 @@ class U2F {
     $certLen += ($regData[$offs + 2] << 8);
     $certLen += $regData[$offs + 3];
 
-    $rawCert = substr($rawReg, $offs, $certLen);
+    $rawCert = U2F::fixSignatureUnusedBits(substr($rawReg, $offs, $certLen));
     $offs += $certLen;
     $pemCert  = "-----BEGIN CERTIFICATE-----\r\n";
     $pemCert .= chunk_split(base64_encode($rawCert), 64);
@@ -352,6 +361,16 @@ class U2F {
   	$challenge = U2F::base64u_encode( $challenge );
 
   	return $challenge;
+  }
+
+  /**
+   * Fixes a certificate where the signature contains unused bits.
+   */
+  private static function fixSignatureUnusedBits($cert) {
+    if(in_array(hash('sha256', $cert), self::$FIXCERTS)) {
+      $cert[strlen($cert) - 257] = "\0";
+    }
+    return $cert;
   }
 }
 
