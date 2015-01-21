@@ -4,3 +4,4 @@ vendor/
 php-u2flib-server-*.tar.gz
 php-u2flib-server-*.tar.gz.sig
 apidocs/
+build/
