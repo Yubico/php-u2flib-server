@@ -1,6 +1,10 @@
 php-u2flib-server NEWS -- History of user-visible changes.
 
-* Version 0.0.3 (unreleased)
+* Version 0.1.0 (released 2015-03-03)
+ ** Use openssl for all crypto instead of third party extensions.
+ ** Properly check the request challenge on authenticate.
+ ** Switch from returning error codes to throwing exceptions.
+ ** Stop recommending composer for installation.
 
 * Version 0.0.2 (released 2014-10-24)
  ** Refactor the API to return objects instead of encoded objects.
