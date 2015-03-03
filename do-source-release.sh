@@ -32,7 +32,6 @@ mkdir -p $releasedir
 git archive $VERSION --format=tar | tar -xC $releasedir
 git2cl > $releasedir/ChangeLog
 cd $releasedir
-composer.phar install
 apigen
 cd -
 tar -cz --directory=$tmpdir --file=${releasename}.tar.gz $releasename
