@@ -55,9 +55,10 @@ const ERR_BAD_RANDOM = 7;
 const ERR_COUNTER_TOO_LOW = 8;
 /** Error decoding public key */
 const ERR_PUBKEY_DECODE = 9;
-
 /** Error user-agent returned error */
 const ERR_BAD_UA_RETURNING = 10;
+/** Error old OpenSSL version */
+const ERR_OLD_OPENSSL = 11;
 
 /** @internal */
 const PUBKEY_LEN = 65;
@@ -80,6 +81,9 @@ class U2F {
    * @param string Directory where trusted attestation roots may be found
    */
   public function __construct($appId, $attestDir = null) {
+    if(OPENSSL_VERSION_NUMBER < 0x10000000) {
+      throw new Error('OpenSSL has to be atleast version 1.0.0, this is ' . OPENSSL_VERSION_TEXT, ERR_OLD_OPENSSL);
+    }
     $this->appId = $appId;
     $this->attestDir = $attestDir;
   }
