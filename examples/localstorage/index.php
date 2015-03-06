@@ -45,7 +45,17 @@ $u2f = new u2flib_server\U2F($scheme . $_SERVER['HTTP_HOST']);
 <head>
 <title>PHP U2F Demo</title>
 
-<script src="chrome-extension://pfboblefjcgdjicmnffhdgionmgcdmne/u2f-api.js"></script>
+<script>
+if( !!window.chrome ) {
+	if( 41 > parseInt(window.navigator.appVersion.match(/Chrome\/(.*?) /)[1], 10) ) {
+		var u2f = document.createElement('script');
+		u2f.src = "chrome-extension://pfboblefjcgdjicmnffhdgionmgcdmne/u2f-api.js";
+
+		var scripts = document.getElementsByTagName('script')[0];
+		scripts.parentNode.insertBefore( u2f, scripts );
+	}
+}
+</script>
 
 <script>
 
