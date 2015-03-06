@@ -88,7 +88,17 @@ function updateReg($reg) {
 <head>
 <title>PHP U2F example</title>
 
-<script src="chrome-extension://pfboblefjcgdjicmnffhdgionmgcdmne/u2f-api.js"></script>
+<script>
+if( !!window.chrome ) {
+	if( 41 > parseInt(window.navigator.appVersion.match(/Chrome\/(.*?) /)[1], 10) ) {
+		var u2f = document.createElement('script');
+		u2f.src = "chrome-extension://pfboblefjcgdjicmnffhdgionmgcdmne/u2f-api.js";
+
+		var scripts = document.getElementsByTagName('script')[0];
+		scripts.parentNode.insertBefore( u2f, scripts );
+	}
+}
+</script>
 
 <script>
 <?php
