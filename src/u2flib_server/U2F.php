@@ -415,7 +415,7 @@ class Registration {
   /** The attestation certificate of the registered authenticator */
   public $certificate;
   /** The counter associated with this registration */
-  public $counter = 0;
+  public $counter = -1;
 }
 
 /** Error class, returned on errors */
