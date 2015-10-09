@@ -1,6 +1,5 @@
 <?php
-
-/*
+/**
  * Copyright (c) 2014 Yubico AB
  * All rights reserved.
  *
@@ -32,7 +31,7 @@
 require_once('src/u2flib_server/U2F.php');
 
 class U2FTest extends \PHPUnit_Framework_TestCase {
-
+  /** @var u2flib_server\U2F */
   private $u2f;
 
   public function setUp() {
