@@ -42,7 +42,7 @@ $u2f = new u2flib_server\U2F($scheme . $_SERVER['HTTP_HOST']);
 <head>
     <title>PHP U2F Demo</title>
 
-    <script src="chrome-extension://pfboblefjcgdjicmnffhdgionmgcdmne/u2f-api.js"></script>
+    <script src="../assets/u2f-api.js"></script>
 
     <script>
         function addRegistration(reg) {
@@ -72,7 +72,7 @@ $u2f = new u2flib_server\U2F($scheme . $_SERVER['HTTP_HOST']);
         }
         if($_SERVER['REQUEST_METHOD'] === 'POST') {
             if(isset($_POST['startRegister'])) {
-                $regs = json_decode($_POST['registrations']);
+                $regs = json_decode($_POST['registrations']) ? : array();
                 list($data, $reqs) = $u2f->getRegisterData($regs);
                 echo "var request = " . json_encode($data) . ";\n";
                 echo "var signs = " . json_encode($reqs) . ";\n";
@@ -103,7 +103,7 @@ $u2f = new u2flib_server\U2F($scheme . $_SERVER['HTTP_HOST']);
         alert("registration successful!");
         <?php
                 } catch(u2flib_server\Error $e) {
-                    echo "alert('error:" . $e->getMessage() . "'\n";
+                    echo "alert('error:" . $e->getMessage() . "');\n";
                 }
             } else if(isset($_POST['startAuthenticate'])) {
                 $regs = json_decode($_POST['registrations']);
@@ -131,9 +131,9 @@ $u2f = new u2flib_server\U2F($scheme . $_SERVER['HTTP_HOST']);
                 $regs = json_decode($_POST['registrations']);
                 try {
                     $data = $u2f->doAuthenticate($reqs, $regs, json_decode($_POST['doAuthenticate']));
-                    echo "alert('Authentication successful, counter:" . $data->counter . "';\n";
+                    echo "alert('Authentication successful, counter:" . $data->counter . "');\n";
                 } catch(u2flib_server\Error $e) {
-                    echo "alert('error:" . $e->getMessage() . "'\n";
+                    echo "alert('error:" . $e->getMessage() . "');\n";
                 }
             }
         }
