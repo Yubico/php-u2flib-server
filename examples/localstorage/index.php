@@ -1,6 +1,6 @@
 <?php
-
- /* Copyright (c) 2014 Yubico AB
+/**
+ * Copyright (c) 2014 Yubico AB
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -34,56 +34,49 @@
  * is stored in browser localStorage, so there's nothing real-world
  * about this.
  */
-
 require_once('../../src/u2flib_server/U2F.php');
-
 $scheme = isset($_SERVER['HTTPS']) ? "https://" : "http://";
 $u2f = new u2flib_server\U2F($scheme . $_SERVER['HTTP_HOST']);
-
 ?>
 <html>
 <head>
-<title>PHP U2F Demo</title>
+    <title>PHP U2F Demo</title>
 
-<script src="chrome-extension://pfboblefjcgdjicmnffhdgionmgcdmne/u2f-api.js"></script>
+    <script src="chrome-extension://pfboblefjcgdjicmnffhdgionmgcdmne/u2f-api.js"></script>
 
-<script>
-
-function addRegistration(reg) {
-    var existing = localStorage.getItem('u2fregistration');
-    var data = null;
-    if(existing) {
-        data = JSON.parse(existing);
-        if(Array.isArray(data)) {
-            data.push(JSON.parse(reg));
-        } else {
-            data = null;
+    <script>
+        function addRegistration(reg) {
+            var existing = localStorage.getItem('u2fregistration');
+            var data = null;
+            if(existing) {
+                data = JSON.parse(existing);
+                if(Array.isArray(data)) {
+                    data.push(JSON.parse(reg));
+                } else {
+                    data = null;
+                }
+            }
+            if(data == null) {
+                data = [JSON.parse(reg)];
+            }
+            localStorage.setItem('u2fregistration', JSON.stringify(data));
         }
-    }
-    if(data == null) {
-        data = [JSON.parse(reg)];
-    }
-    localStorage.setItem('u2fregistration', JSON.stringify(data));
-}
-
-<?php
-
-function fixupArray($data) {
-    $ret = array();
-    $decoded = json_decode($data);
-    foreach ($decoded as $d) {
-        $ret[] = json_encode($d);
-    }
-    return $ret;
-}
-
-if($_SERVER['REQUEST_METHOD'] === 'POST') {
-    if(isset($_POST['startRegister'])) {
-        $regs = json_decode($_POST['registrations']);
-        list($data, $reqs) = $u2f->getRegisterData($regs);
-        echo "var request = " . json_encode($data) . ";\n";
-        echo "var signs = " . json_encode($reqs) . ";\n";
-?>
+        <?php
+        function fixupArray($data) {
+            $ret = array();
+            $decoded = json_decode($data);
+            foreach ($decoded as $d) {
+                $ret[] = json_encode($d);
+            }
+            return $ret;
+        }
+        if($_SERVER['REQUEST_METHOD'] === 'POST') {
+            if(isset($_POST['startRegister'])) {
+                $regs = json_decode($_POST['registrations']);
+                list($data, $reqs) = $u2f->getRegisterData($regs);
+                echo "var request = " . json_encode($data) . ";\n";
+                echo "var signs = " . json_encode($reqs) . ";\n";
+        ?>
         setTimeout(function() {
             console.log("Register: ", request);
             u2f.register([request], signs, function(data) {
@@ -100,24 +93,24 @@ if($_SERVER['REQUEST_METHOD'] === 'POST') {
                 form.submit();
             });
         }, 1000);
-<?php
-    } else if($_POST['doRegister']) {
-        try {
-            $data = $u2f->doRegister(json_decode($_POST['request']), json_decode($_POST['doRegister']));
-            echo "var registration = '" . json_encode($data) . "';\n";
-?>
-            addRegistration(registration);
-            alert("registration successful!");
-<?php
-        } catch(u2flib_server\Error $e) {
-            echo "alert('error:" . $e->getMessage() . "'\n";
-        }
-    } else if(isset($_POST['startAuthenticate'])) {
-        $regs = json_decode($_POST['registrations']);
-        $data = $u2f->getAuthenticateData($regs);
-        echo "var registrations = " . $_POST['registrations'] . ";\n";
-        echo "var request = " . json_encode($data) . ";\n";
-?>
+        <?php
+            } else if($_POST['doRegister']) {
+                try {
+                    $data = $u2f->doRegister(json_decode($_POST['request']), json_decode($_POST['doRegister']));
+                    echo "var registration = '" . json_encode($data) . "';\n";
+        ?>
+        addRegistration(registration);
+        alert("registration successful!");
+        <?php
+                } catch(u2flib_server\Error $e) {
+                    echo "alert('error:" . $e->getMessage() . "'\n";
+                }
+            } else if(isset($_POST['startAuthenticate'])) {
+                $regs = json_decode($_POST['registrations']);
+                $data = $u2f->getAuthenticateData($regs);
+                echo "var registrations = " . $_POST['registrations'] . ";\n";
+                echo "var request = " . json_encode($data) . ";\n";
+        ?>
         setTimeout(function() {
             console.log("sign: ", request);
             u2f.sign(request, function(data) {
@@ -132,54 +125,53 @@ if($_SERVER['REQUEST_METHOD'] === 'POST') {
                 form.submit();
             });
         }, 1000);
-<?php
-    } else if($_POST['doAuthenticate']) {
-        $reqs = json_decode($_POST['request']);
-        $regs = json_decode($_POST['registrations']);
-        try {
-            $data = $u2f->doAuthenticate($reqs, $regs, json_decode($_POST['doAuthenticate']));
-            echo "alert('Authentication successful, counter:" . $data->counter . "';\n";
-        } catch(u2flib_server\Error $e) {
-            echo "alert('error:" . $e->getMessage() . "'\n";
+        <?php
+            } else if($_POST['doAuthenticate']) {
+                $reqs = json_decode($_POST['request']);
+                $regs = json_decode($_POST['registrations']);
+                try {
+                    $data = $u2f->doAuthenticate($reqs, $regs, json_decode($_POST['doAuthenticate']));
+                    echo "alert('Authentication successful, counter:" . $data->counter . "';\n";
+                } catch(u2flib_server\Error $e) {
+                    echo "alert('error:" . $e->getMessage() . "'\n";
+                }
+            }
         }
-    }
-}
-?>
-</script>
+        ?>
+    </script>
 
 </head>
 <body>
 <form method="POST" id="form">
-<button name="startRegister" type="submit">Register</button>
-<input type="hidden" name="doRegister" id="doRegister"/>
-<button name="startAuthenticate" type="submit" id="startAuthenticate">Authenticate</button>
-<input type="hidden" name="doAuthenticate" id="doAuthenticate"/>
-<input type="hidden" name="request" id="request"/>
-<input type="hidden" name="registrations" id="registrations"/>
+    <button name="startRegister" type="submit">Register</button>
+    <input type="hidden" name="doRegister" id="doRegister"/>
+    <button name="startAuthenticate" type="submit" id="startAuthenticate">Authenticate</button>
+    <input type="hidden" name="doAuthenticate" id="doAuthenticate"/>
+    <input type="hidden" name="request" id="request"/>
+    <input type="hidden" name="registrations" id="registrations"/>
 </form>
 
 <p>
-<span id="registered">0</span> Authenticators currently registered.
+    <span id="registered">0</span> Authenticators currently registered.
 </p>
 
 <script>
-var reg = localStorage.getItem('u2fregistration');
-var auth = document.getElementById('startAuthenticate');
-if(reg == null) {
-    auth.disabled = true;
-} else {
-    var regs = document.getElementById('registrations');
-    decoded = JSON.parse(reg);
-    if(!Array.isArray(decoded)) {
+    var reg = localStorage.getItem('u2fregistration');
+    var auth = document.getElementById('startAuthenticate');
+    if(reg == null) {
         auth.disabled = true;
     } else {
-        regs.value = reg;
-        console.log("set the registrations to : ", reg);
-
-        var regged = document.getElementById('registered');
-        regged.innerHTML = decoded.length;
+        var regs = document.getElementById('registrations');
+        decoded = JSON.parse(reg);
+        if(!Array.isArray(decoded)) {
+            auth.disabled = true;
+        } else {
+            regs.value = reg;
+            console.log("set the registrations to : ", reg);
+            var regged = document.getElementById('registered');
+            regged.innerHTML = decoded.length;
+        }
     }
-}
 </script>
 </body>
 </html>
