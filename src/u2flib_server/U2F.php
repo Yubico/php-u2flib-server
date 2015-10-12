@@ -69,7 +69,7 @@ class U2F {
   private $attestDir;
 
   /** @internal */
-  private static $FIXCERTS = array(
+  private $FIXCERTS = array(
     '349bca1031f8c82c4ceca38b9cebf1a69df9fb3b94eed99eb3fb9aa3822d26e8',
     'dd574527df608e47ae45fbba75a2afdd5c20fd94a02419381813cd55a2a3398f',
     '1d8764f0f7cd1352df6150045c8f638e517270e8b5dda1c63ade9c2280240cae',
@@ -101,7 +101,7 @@ class U2F {
    * @throws Error
    */
   public function getRegisterData(array $registrations = array()) {
-    $challenge = U2F::createChallenge();
+    $challenge = $this->createChallenge();
     $request = new RegisterRequest($challenge, $this->appId);
     $signs = $this->getAuthenticateData($registrations);
     return array($request, $signs);
@@ -133,9 +133,9 @@ class U2F {
     	throw new \InvalidArgumentException('$include_cert of doRegister() method only accepts boolean.');
     }
 
-    $rawReg =  U2F::base64u_decode($response->registrationData);
+    $rawReg = $this->base64u_decode($response->registrationData);
     $regData = array_values(unpack('C*', $rawReg));
-    $clientData = U2F::base64u_decode($response->clientData);
+    $clientData = $this->base64u_decode($response->clientData);
     $cli = json_decode($clientData);
 
     if($cli->challenge !== $request->challenge) {
@@ -147,7 +147,7 @@ class U2F {
     $pubKey = substr($rawReg, $offs, PUBKEY_LEN);
     $offs += PUBKEY_LEN;
     // decode the pubKey to make sure it's good
-    $tmpKey = U2F::pubkey_to_pem($pubKey);
+    $tmpKey = $this->pubkey_to_pem($pubKey);
     if($tmpKey === null) {
       throw new Error('Decoding of public key failed', ERR_PUBKEY_DECODE );
     }
@@ -155,14 +155,14 @@ class U2F {
     $khLen = $regData[$offs++];
     $kh = substr($rawReg, $offs, $khLen);
     $offs += $khLen;
-    $registration->keyHandle = U2F::base64u_encode($kh);
+    $registration->keyHandle = $this->base64u_encode($kh);
 
     // length of certificate is stored in byte 3 and 4 (excluding the first 4 bytes)
     $certLen = 4;
     $certLen += ($regData[$offs + 2] << 8);
     $certLen += $regData[$offs + 3];
 
-    $rawCert = U2F::fixSignatureUnusedBits(substr($rawReg, $offs, $certLen));
+    $rawCert = $this->fixSignatureUnusedBits(substr($rawReg, $offs, $certLen));
     $offs += $certLen;
     $pemCert  = "-----BEGIN CERTIFICATE-----\r\n";
     $pemCert .= chunk_split(base64_encode($rawCert), 64);
@@ -210,7 +210,7 @@ class U2F {
       $sig = new SignRequest();
       $sig->appId = $this->appId;
       $sig->keyHandle = $reg->keyHandle;
-      $sig->challenge = U2F::createChallenge();
+      $sig->challenge = $this->createChallenge();
       $sigs[] = $sig;
     }
     return $sigs;
@@ -242,7 +242,7 @@ class U2F {
     $req = null;
     /** @var object|null $reg */
     $reg = null;
-    $clientData = U2F::base64u_decode($response->clientData);
+    $clientData = $this->base64u_decode($response->clientData);
     $decodedClient = json_decode($clientData);
     foreach ($requests as $req) {
       if( !is_object( $req ) ) {
@@ -270,12 +270,12 @@ class U2F {
     if($reg === null) {
       throw new Error('No matching registration found', ERR_NO_MATCHING_REGISTRATION );
     }
-    $pemKey = U2F::pubkey_to_pem(U2F::base64u_decode($reg->publicKey));
+    $pemKey = $this->pubkey_to_pem($this->base64u_decode($reg->publicKey));
     if($pemKey === null) {
       throw new Error('Decoding of public key failed', ERR_PUBKEY_DECODE );
     }
 
-    $signData = U2F::base64u_decode($response->signatureData);
+    $signData = $this->base64u_decode($response->signatureData);
     $dataToVerify  = hash('sha256', $req->appId, true);
     $dataToVerify .= substr($signData, 0, 5);
     $dataToVerify .= hash('sha256', $clientData, true);
@@ -317,7 +317,7 @@ class U2F {
    * @param string $data
    * @return string
    */
-  private static function base64u_encode($data) {
+  private function base64u_encode($data) {
     return trim(strtr(base64_encode($data), '+/', '-_'), '=');
   }
 
@@ -325,7 +325,7 @@ class U2F {
    * @param string $data
    * @return string
    */
-  private static function base64u_decode($data) {
+  private function base64u_decode($data) {
     return base64_decode(strtr($data, '-_', '+/'));
   }
 
@@ -333,7 +333,7 @@ class U2F {
    * @param string $key
    * @return null|string
    */
-  private static function pubkey_to_pem($key) {
+  private function pubkey_to_pem($key) {
     if(strlen($key) !== PUBKEY_LEN || $key[0] !== "\x04") {
       return null;
     }
@@ -363,13 +363,13 @@ class U2F {
    * @return string
    * @throws Error
    */
-  private static function createChallenge() {
+  private function createChallenge() {
     $challenge = openssl_random_pseudo_bytes(32, $crypto_strong );
     if( $crypto_strong !== true ) {
         throw new Error('Unable to obtain a good source of randomness', ERR_BAD_RANDOM);
     }
 
-    $challenge = U2F::base64u_encode( $challenge );
+    $challenge = $this->base64u_encode( $challenge );
 
     return $challenge;
   }
@@ -380,8 +380,8 @@ class U2F {
    * @param string $cert
    * @return mixed
    */
-  private static function fixSignatureUnusedBits($cert) {
-    if(in_array(hash('sha256', $cert), self::$FIXCERTS)) {
+  private function fixSignatureUnusedBits($cert) {
+    if(in_array(hash('sha256', $cert), $this->FIXCERTS)) {
       $cert[strlen($cert) - 257] = "\0";
     }
     return $cert;
