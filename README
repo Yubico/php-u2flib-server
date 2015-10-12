@@ -1,5 +1,10 @@
-php-u2flib-server image:https://travis-ci.org/Yubico/php-u2flib-server.svg?branch=master["Build Status", link="https://travis-ci.org/Yubico/php-u2flib-server"] image:https://coveralls.io/repos/Yubico/php-u2flib-server/badge.svg?branch=master&service=github["Coverage", link="https://coveralls.io/github/Yubico/php-u2flib-server?branch=master"]
--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+php-u2flib-server
+-----------------
+
+image:https://travis-ci.org/Yubico/php-u2flib-server.svg?branch=master["Build Status", link="https://travis-ci.org/Yubico/php-u2flib-server"]
+image:https://coveralls.io/repos/Yubico/php-u2flib-server/badge.svg?branch=master&service=github["Coverage", link="https://coveralls.io/github/Yubico/php-u2flib-server?branch=master"]
+
+=== Introduction ===
 
 Serverside U2F library for PHP. Provides functionality for registering
 tokens and authentication with said tokens.
