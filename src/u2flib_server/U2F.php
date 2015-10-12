@@ -100,7 +100,7 @@ class U2F {
    */
   public function getRegisterData($registrations = array()) {
     if( !is_array( $registrations ) ) {
-    	throw new \InvalidArgumentException('$registrations of getRegisterData() method only accepts array.');
+        throw new \InvalidArgumentException('$registrations of getRegisterData() method only accepts array.');
     }
 
     $challenge = U2F::createChallenge();
