@@ -63,7 +63,9 @@ const ERR_OLD_OPENSSL = 11;
 const PUBKEY_LEN = 65;
 
 class U2F {
+  /** @var string  */
   private $appId;
+  /** @var null|string */
   private $attestDir;
 
   /** @internal */
