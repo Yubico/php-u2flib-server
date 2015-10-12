@@ -100,11 +100,7 @@ class U2F {
    * RegisterRequest the second being an array of SignRequest
    * @throws Error
    */
-  public function getRegisterData($registrations = array()) {
-    if( !is_array( $registrations ) ) {
-        throw new \InvalidArgumentException('$registrations of getRegisterData() method only accepts array.');
-    }
-
+  public function getRegisterData(array $registrations = array()) {
     $challenge = U2F::createChallenge();
     $request = new RegisterRequest($challenge, $this->appId);
     $signs = $this->getAuthenticateData($registrations);
@@ -204,11 +200,7 @@ class U2F {
    * @return array An array of SignRequest
    * @throws Error
    */
-  public function getAuthenticateData($registrations) {
-    if( !is_array( $registrations ) ) {
-    	throw new \InvalidArgumentException('$registrations of getAuthenticateData() method only accepts array.');
-    }
-
+  public function getAuthenticateData(array $registrations) {
     $sigs = array();
     foreach ($registrations as $reg) {
       if( !is_object( $reg ) ) {
@@ -237,15 +229,7 @@ class U2F {
    * If the Error returned is ERR_COUNTER_TOO_LOW this is an indication of
    * token cloning or similar and appropriate action should be taken.
    */
-  public function doAuthenticate($requests, $registrations, $response) {
-    if( !is_array( $requests ) ) {
-    	throw new \InvalidArgumentException('$requests of doAuthenticate() method only accepts array.');
-    }
-
-    if( !is_array( $registrations ) ) {
-    	throw new \InvalidArgumentException('$registrations of doAuthenticate() method only accepts array.');
-    }
-
+  public function doAuthenticate(array $requests, array $registrations, $response) {
     if( !is_object( $response ) ) {
     	throw new \InvalidArgumentException('$response of doAuthenticate() method only accepts object.');
     }
