@@ -63,7 +63,9 @@ const ERR_OLD_OPENSSL = 11;
 const PUBKEY_LEN = 65;
 
 class U2F {
+  /** @var string  */
   private $appId;
+  /** @var null|string */
   private $attestDir;
 
   /** @internal */
@@ -92,7 +94,7 @@ class U2F {
    * Called to get a registration request to send to a user.
    * Returns an array of one registration request and a array of sign requests.
    * @param array $registrations List of current registrations for this
-   * user, to prevent the user from registering the same authenticator serveral
+   * user, to prevent the user from registering the same authenticator several
    * times.
    * @return array An array of two elements, the first containing a
    * RegisterRequest the second being an array of SignRequest
@@ -100,7 +102,7 @@ class U2F {
    */
   public function getRegisterData($registrations = array()) {
     if( !is_array( $registrations ) ) {
-    	throw new \InvalidArgumentException('$registrations of getRegisterData() method only accepts array.');
+        throw new \InvalidArgumentException('$registrations of getRegisterData() method only accepts array.');
     }
 
     $challenge = U2F::createChallenge();
