@@ -92,7 +92,7 @@ class U2F {
    * Called to get a registration request to send to a user.
    * Returns an array of one registration request and a array of sign requests.
    * @param array $registrations List of current registrations for this
-   * user, to prevent the user from registering the same authenticator serveral
+   * user, to prevent the user from registering the same authenticator several
    * times.
    * @return array An array of two elements, the first containing a
    * RegisterRequest the second being an array of SignRequest
