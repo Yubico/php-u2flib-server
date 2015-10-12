@@ -1,14 +1,9 @@
-<phpunit 
+<phpunit
     colors="true">
     <testsuite name="tests">
         <directory suffix="test.php">.</directory>
     </testsuite>
-    <filter>
-        <blacklist>
-            <directory>vendor</directory>
-        </blacklist>
-    </filter>
-        <logging>
-            <log type="coverage-clover" target="build/logs/clover.xml"/>
-        </logging>
+    <logging>
+        <log type="coverage-clover" target="build/logs/clover.xml"/>
+    </logging>
 </phpunit>
