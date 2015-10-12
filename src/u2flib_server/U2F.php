@@ -150,7 +150,7 @@ class U2F {
     $offs += PUBKEY_LEN;
     // decode the pubKey to make sure it's good
     $tmpKey = U2F::pubkey_to_pem($pubKey);
-    if($tmpKey == null) {
+    if($tmpKey === null) {
       throw new Error('Decoding of public key failed', ERR_PUBKEY_DECODE );
     }
     $registration->publicKey = base64_encode($pubKey);
@@ -285,7 +285,7 @@ class U2F {
       throw new Error('No matching registration found', ERR_NO_MATCHING_REGISTRATION );
     }
     $pemKey = U2F::pubkey_to_pem(U2F::base64u_decode($reg->publicKey));
-    if($pemKey == null) {
+    if($pemKey === null) {
       throw new Error('Decoding of public key failed', ERR_PUBKEY_DECODE );
     }
 
@@ -348,7 +348,7 @@ class U2F {
    * @return null|string
    */
   private static function pubkey_to_pem($key) {
-    if(strlen($key) != PUBKEY_LEN || $key[0] != "\x04") {
+    if(strlen($key) !== PUBKEY_LEN || $key[0] !== "\x04") {
       return null;
     }
 
@@ -378,14 +378,14 @@ class U2F {
    * @throws Error
    */
   private static function createChallenge() {
-  	$challenge = openssl_random_pseudo_bytes(32, $crypto_strong );
-  	if( $crypto_strong != true ) {
-          throw new Error('Unable to obtain a good source of randomness', ERR_BAD_RANDOM );
-  	}
+    $challenge = openssl_random_pseudo_bytes(32, $crypto_strong );
+    if( $crypto_strong !== true ) {
+        throw new Error('Unable to obtain a good source of randomness', ERR_BAD_RANDOM);
+    }
 
-  	$challenge = U2F::base64u_encode( $challenge );
+    $challenge = U2F::base64u_encode( $challenge );
 
-  	return $challenge;
+    return $challenge;
   }
 
   /**
