@@ -47,17 +47,24 @@ $u2f = new u2flib_server\U2F($scheme . $_SERVER['HTTP_HOST']);
     <script>
         function addRegistration(reg) {
             var existing = localStorage.getItem('u2fregistration');
+            var regobj = JSON.parse(reg);
             var data = null;
             if(existing) {
                 data = JSON.parse(existing);
                 if(Array.isArray(data)) {
-                    data.push(JSON.parse(reg));
+                    for (var i = 0; i < data.length; i++) {
+                        if(data[i].keyHandle === regobj.keyHandle) {
+                            data.splice(i,1);
+                            break;
+                        }
+                    }
+                    data.push(regobj);
                 } else {
                     data = null;
                 }
             }
             if(data == null) {
-                data = [JSON.parse(reg)];
+                data = [regobj];
             }
             localStorage.setItem('u2fregistration', JSON.stringify(data));
         }
@@ -131,6 +138,8 @@ $u2f = new u2flib_server\U2F($scheme . $_SERVER['HTTP_HOST']);
                 $regs = json_decode($_POST['registrations']);
                 try {
                     $data = $u2f->doAuthenticate($reqs, $regs, json_decode($_POST['doAuthenticate']));
+                    echo "var registration = '" . json_encode($data) . "';\n";
+                    echo "addRegistration(registration);\n";
                     echo "alert('Authentication successful, counter:" . $data->counter . "');\n";
                 } catch(u2flib_server\Error $e) {
                     echo "alert('error:" . $e->getMessage() . "');\n";
