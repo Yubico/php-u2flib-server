@@ -8,6 +8,8 @@ php:
   - 7.0
   - hhvm
   - hhvm-nightly
+install:
+  - composer install
 after_success:
   - test -z $COVERALLS || (composer require satooshi/php-coveralls && vendor/bin/coveralls -v)
 matrix:
