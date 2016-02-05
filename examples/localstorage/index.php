@@ -91,7 +91,7 @@ $u2f = new u2flib_server\U2F($scheme . $_SERVER['HTTP_HOST']);
                 var reg = document.getElementById('doRegister');
                 var req = document.getElementById('request');
                 console.log("Register callback", data);
-                if(data.errorCode) {
+                if(data.errorCode && data.errorCode != 0) {
                     alert("registration failed with errror: " + data.errorCode);
                     return;
                 }

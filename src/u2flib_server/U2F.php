@@ -143,7 +143,7 @@ class U2F
             throw new \InvalidArgumentException('$response of doRegister() method only accepts object.');
         }
 
-        if( property_exists( $response, 'errorCode') ) {
+        if( property_exists( $response, 'errorCode') && $response->errorCode !== 0 ) {
             throw new Error('User-agent returned error. Error code: ' . $response->errorCode, ERR_BAD_UA_RETURNING );
         }
 
@@ -256,7 +256,7 @@ class U2F
             throw new \InvalidArgumentException('$response of doAuthenticate() method only accepts object.');
         }
 
-        if( property_exists( $response, 'errorCode') ) {
+        if( property_exists( $response, 'errorCode') && $response->errorCode !== 0 ) {
             throw new Error('User-agent returned error. Error code: ' . $response->errorCode, ERR_BAD_UA_RETURNING );
         }
 
