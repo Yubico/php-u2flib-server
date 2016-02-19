@@ -1,5 +1,7 @@
 php-u2flib-server NEWS -- History of user-visible changes.
 
+* Version 1.0.1 (unreleased)
+
 * Version 1.0.0 (released 2016-02-19)
  ** Give an early error on openssl < 1.0
  ** Support devices with initial counter 0
