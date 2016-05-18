@@ -27,7 +27,7 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-namespace u2flib_server;
+namespace Yubico;
 
 /** Constant for the version of the u2f protocol */
 const U2F_VERSION = "U2F_V2";

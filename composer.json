@@ -7,7 +7,11 @@
     "ext-openssl":"*"
   },
   "autoload": {
-    "classmap": ["src/"]
+    "psr-4": {
+      "Yubico\\": "src/u2flib_server/"
+    }
+  },
+  "require-dev": {
+    "phpunit/phpunit": "^5.3"
   }
 }
-

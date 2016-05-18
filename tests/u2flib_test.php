@@ -28,14 +28,16 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-require_once(__DIR__ . '/../src/u2flib_server/U2F.php');
+require_once(__DIR__ . '/../vendor/autoload.php');
+
+use Yubico\U2F;
 
 class U2FTest extends \PHPUnit_Framework_TestCase {
-  /** @var u2flib_server\U2F */
+
   private $u2f;
 
   public function setUp() {
-    $this->u2f = new u2flib_server\U2F("http://demo.example.com");
+    $this->u2f = new U2F("http://demo.example.com");
   }
 
   public function testGetRegisterData() {
@@ -66,19 +68,19 @@ class U2FTest extends \PHPUnit_Framework_TestCase {
   }
 
   /**
-   * @expectedException u2flib_server\Error
-   * @expectedExceptionCode u2flib_server\ERR_ATTESTATION_VERIFICATION
+   * @expectedException Yubico\Error
+   * @expectedExceptionCode Yubico\ERR_ATTESTATION_VERIFICATION
    */
   public function testDoRegisterAttestFail() {
-    $this->u2f = new u2flib_server\U2F("http://demo.example.com", __DIR__ . "/../tests/certs");
+    $this->u2f = new U2F("http://demo.example.com", __DIR__ . "/../tests/certs");
     $req = json_decode('{"version":"U2F_V2","challenge":"yKA0x075tjJ-GE7fKTfnzTOSaNUOWQxRd9TWz5aFOg8","appId":"http://demo.example.com"}');
     $resp = json_decode('{ "registrationData": "BQQtEmhWVgvbh-8GpjsHbj_d5FB9iNoRL8mNEq34-ANufKWUpVdIj6BSB_m3eMoZ3GqnaDy3RA5eWP8mhTkT1Ht3QAk1GsmaPIQgXgvrBkCQoQtMFvmwYPfW5jpRgoMPFxquHS7MTt8lofZkWAK2caHD-YQQdaRBgd22yWIjPuWnHOcwggLiMIHLAgEBMA0GCSqGSIb3DQEBCwUAMB0xGzAZBgNVBAMTEll1YmljbyBVMkYgVGVzdCBDQTAeFw0xNDA1MTUxMjU4NTRaFw0xNDA2MTQxMjU4NTRaMB0xGzAZBgNVBAMTEll1YmljbyBVMkYgVGVzdCBFRTBZMBMGByqGSM49AgEGCCqGSM49AwEHA0IABNsK2_Uhx1zOY9ym4eglBg2U5idUGU-dJK8mGr6tmUQflaNxkQo6IOc-kV4T6L44BXrVeqN-dpCPr-KKlLYw650wDQYJKoZIhvcNAQELBQADggIBAJVAa1Bhfa2Eo7TriA_jMA8togoA2SUE7nL6Z99YUQ8LRwKcPkEpSpOsKYWJLaR6gTIoV3EB76hCiBaWN5HV3-CPyTyNsM2JcILsedPGeHMpMuWrbL1Wn9VFkc7B3Y1k3OmcH1480q9RpYIYr-A35zKedgV3AnvmJKAxVhv9GcVx0_CewHMFTryFuFOe78W8nFajutknarupekDXR4tVcmvj_ihJcST0j_Qggeo4_3wKT98CgjmBgjvKCd3Kqg8n9aSDVWyaOZsVOhZj3Fv5rFu895--D4qiPDETozJIyliH-HugoQpqYJaTX10mnmMdCa6aQeW9CEf-5QmbIP0S4uZAf7pKYTNmDQ5z27DVopqaFw00MIVqQkae_zSPX4dsNeeoTTXrwUGqitLaGap5ol81LKD9JdP3nSUYLfq0vLsHNDyNgb306TfbOenRRVsgQS8tJyLcknSKktWD_Qn7E5vjOXprXPrmdp7g5OPvrbz9QkWa1JTRfo2n2AXV02LPFc-UfR9bWCBEIJBxvmbpmqt0MnBTHWnth2b0CU_KJTDCY3kAPLGbOT8A4KiI73pRW-e9SWTaQXskw3Ei_dHRILM_l9OXsqoYHJ4Dd3tbfvmjoNYggSw4j50l3unI9d1qR5xlBFpW5sLr8gKX4bnY4SR2nyNiOQNLyPc0B0nW502aMEUCIQDTGOX-i_QrffJDY8XvKbPwMuBVrOSO-ayvTnWs_WSuDQIgZ7fMAvD_Ezyy5jg6fQeuOkoJi8V2naCtzV-HTly8Nww=", "clientData": "eyAiY2hhbGxlbmdlIjogInlLQTB4MDc1dGpKLUdFN2ZLVGZuelRPU2FOVU9XUXhSZDlUV3o1YUZPZzgiLCAib3JpZ2luIjogImh0dHA6XC9cL2RlbW8uZXhhbXBsZS5jb20iLCAidHlwIjogIm5hdmlnYXRvci5pZC5maW5pc2hFbnJvbGxtZW50IiB9" }');
     $this->u2f->doRegister($req, $resp, true);
   }
 
   /**
-   * @expectedException u2flib_server\Error
-   * @expectedExceptionCode u2flib_server\ERR_ATTESTATION_SIGNATURE
+   * @expectedException Yubico\Error
+   * @expectedExceptionCode Yubico\ERR_ATTESTATION_SIGNATURE
    */
   public function testDoRegisterFail2() {
     $req = json_decode('{"version":"U2F_V2","challenge":"yKA0x075tjJ-GE7fKTfnzTOSaNUOWQxRd9TWz5aFOg8","appId":"http://demo.example.com"}');
@@ -87,8 +89,8 @@ class U2FTest extends \PHPUnit_Framework_TestCase {
   }
 
   /**
-   * @expectedException u2flib_server\Error
-   * @expectedExceptionCode u2flib_server\ERR_UNMATCHED_CHALLENGE
+   * @expectedException Yubico\Error
+   * @expectedExceptionCode Yubico\ERR_UNMATCHED_CHALLENGE
    */
   public function testDoRegisterFail() {
     $req = json_decode('{"version":"U2F_V2","challenge":"YKA0X075tjJ-GE7fKTfnzTOSaNUOWQxRd9TWz5aFOg8","appId":"http://demo.example.com"}');
@@ -97,7 +99,7 @@ class U2FTest extends \PHPUnit_Framework_TestCase {
   }
 
   public function testDoRegisterAttest() {
-    $this->u2f = new u2flib_server\U2F("http://demo.example.com", __DIR__ . "/../tests/certs");
+    $this->u2f = new U2F("http://demo.example.com", __DIR__ . "/../tests/certs");
     $req = json_decode('{"version":"U2F_V2","challenge":"5CBRhGBb2CXSum71GNREBGft7yz9g1jZO7JTkHGFsVY","appId":"http:\/\/demo.example.com"}');
     $resp = json_decode('{ "registrationData": "BQRX1gfcG-ofTlk9rjB9spsIMrmT9ba0DLto5fzk8FDB05ModNU2sWAqoQRemYiUrILQdbNGpN_aHA0_oq8kcd_XQCK-Ut0PWaOtz43t0aAV04U788e-dvpeqLtHxtINjgmutKM8_GJQ7F-3W0dogUjSANuRYRdkkSEHPcVdLSkpyfowggIbMIIBBaADAgECAgRAxBIlMAsGCSqGSIb3DQEBCzAuMSwwKgYDVQQDEyNZdWJpY28gVTJGIFJvb3QgQ0EgU2VyaWFsIDQ1NzIwMDYzMTAgFw0xNDA4MDEwMDAwMDBaGA8yMDUwMDkwNDAwMDAwMFowKjEoMCYGA1UEAwwfWXViaWNvIFUyRiBFRSBTZXJpYWwgMTA4NjU5MTUyNTBZMBMGByqGSM49AgEGCCqGSM49AwEHA0IABK2iSVV7KGNEdPE-oHGvobNnHVw6ZZ6vB3jNIYB1C4t32OucHzMweHqM5CAMSMDHtfp1vuJYaiQSk7jb6M48WtejEjAQMA4GCisGAQQBgsQKAQEEADALBgkqhkiG9w0BAQsDggEBAVg0BoEHEEp4LJLYPYFACRGS8WZiXkCA8crYLgGnzvfKXwPwyKJlUzYxxv5xoRrl5zjkIUXhZ4mnHZVsnj9EY_VGDuRRzKX7YtxTZpFZn7ej3abjLhckTkkQ_AhUkmP7VuK2AWLgYsS8ejGUqughBsKvh_84uxTAEr5BS-OGg2yi7UIjd8W0nOCc6EN8d_8wCiPOjt2Y_-TKpLLTXKszk4UnWNzRdxBThmBBprJBZbF1VyVRvJm5yRLBpth3G8KMvrt4Nu3Ecoj_Q154IJpWe1Dp1upDFLOG9nWCRQk25Y264k9BDISfqs-wHvUjIo2iDnKl5UVoauTWaT7M6KuEwl4wRAIgYUVjS_yTwJAtF35glSbf9Et-5tJzlHOeAqmbACd6pwsCIE0MkTR5XNQoO4XqDaUZCXmadWu8yU1gfE7AJI9JUUcc", "clientData": "eyAiY2hhbGxlbmdlIjogIjVDQlJoR0JiMkNYU3VtNzFHTlJFQkdmdDd5ejlnMWpaTzdKVGtIR0ZzVlkiLCAib3JpZ2luIjogImh0dHA6XC9cL2RlbW8uZXhhbXBsZS5jb20iLCAidHlwIjogIm5hdmlnYXRvci5pZC5maW5pc2hFbnJvbGxtZW50IiB9" }');
     $reg = $this->u2f->doRegister($req, $resp, true);
@@ -107,8 +109,8 @@ class U2FTest extends \PHPUnit_Framework_TestCase {
   }
 
   /**
-   * @expectedException u2flib_server\Error
-   * @expectedExceptionCode u2flib_server\ERR_PUBKEY_DECODE
+   * @expectedException Yubico\Error
+   * @expectedExceptionCode Yubico\ERR_PUBKEY_DECODE
    */
   public function testDoRegisterBadKeyInCert() {
     $req = json_decode('{"version":"U2F_V2","challenge":"yKA0x075tjJ-GE7fKTfnzTOSaNUOWQxRd9TWz5aFOg8","appId":"http://demo.example.com"}');
@@ -117,8 +119,8 @@ class U2FTest extends \PHPUnit_Framework_TestCase {
   }
 
   /**
-   * @expectedException u2flib_server\Error
-   * @expectedExceptionCode u2flib_server\ERR_PUBKEY_DECODE
+   * @expectedException Yubico\Error
+   * @expectedExceptionCode Yubico\ERR_PUBKEY_DECODE
    */
   public function testDoRegisterBadKey() {
     $req = json_decode('{"version":"U2F_V2","challenge":"yKA0x075tjJ-GE7fKTfnzTOSaNUOWQxRd9TWz5aFOg8","appId":"http://demo.example.com"}');
@@ -147,8 +149,8 @@ class U2FTest extends \PHPUnit_Framework_TestCase {
   }
 
   /**
-   * @expectedException u2flib_server\Error
-   * @expectedExceptionCode u2flib_server\ERR_BAD_UA_RETURNING
+   * @expectedException Yubico\Error
+   * @expectedExceptionCode Yubico\ERR_BAD_UA_RETURNING
    */
   public function testDoRegisterUAError() {
     $req = json_decode('{"version":"U2F_V2","challenge":"yKA0x075tjJ-GE7fKTfnzTOSaNUOWQxRd9TWz5aFOg8","appId":"http://demo.example.com"}');
@@ -194,8 +196,8 @@ class U2FTest extends \PHPUnit_Framework_TestCase {
   }
 
   /**
-   * @expectedException u2flib_server\Error
-   * @expectedExceptionCode u2flib_server\ERR_COUNTER_TOO_LOW
+   * @expectedException Yubico\Error
+   * @expectedExceptionCode Yubico\ERR_COUNTER_TOO_LOW
    */
   public function testDoAuthenticateCtrFail() {
     $reqs = array(json_decode('{"version":"U2F_V2","challenge":"fEnc9oV79EaBgK5BoNERU5gPKM2XGYWrz4fUjgc0Q7g","keyHandle":"CTUayZo8hCBeC-sGQJChC0wW-bBg99bmOlGCgw8XGq4dLsxO3yWh9mRYArZxocP5hBB1pEGB3bbJYiM-5acc5w","appId":"http://demo.example.com"}'));
@@ -205,8 +207,8 @@ class U2FTest extends \PHPUnit_Framework_TestCase {
   }
 
   /**
-   * @expectedException u2flib_server\Error
-   * @expectedExceptionCode u2flib_server\ERR_AUTHENTICATION_FAILURE
+   * @expectedException Yubico\Error
+   * @expectedExceptionCode Yubico\ERR_AUTHENTICATION_FAILURE
    */
   public function testDoAuthenticateFail() {
     $reqs = array(json_decode('{"version":"U2F_V2","challenge":"fEnc9oV79EaBgK5BoNERU5gPKM2XGYWrz4fUjgc0Q7g","keyHandle":"CTUayZo8hCBeC-sGQJChC0wW-bBg99bmOlGCgw8XGq4dLsxO3yWh9mRYArZxocP5hBB1pEGB3bbJYiM-5acc5w","appId":"http://demo.example.com"}'));
@@ -216,8 +218,8 @@ class U2FTest extends \PHPUnit_Framework_TestCase {
   }
 
   /**
-   * @expectedException u2flib_server\Error
-   * @expectedExceptionCode u2flib_server\ERR_NO_MATCHING_REQUEST
+   * @expectedException Yubico\Error
+   * @expectedExceptionCode Yubico\ERR_NO_MATCHING_REQUEST
    */
   public function testDoAuthenticateWrongReq() {
     $reqs = array(json_decode('{"version":"U2F_V2","challenge":"fEnc9oV79EaBgK5BoNERU5gPKM2XGYWrz4fUjgc0Q7g","keyHandle":"cTUayZo8hCBeC-sGQJChC0wW-bBg99bmOlGCgw8XGq4dLsxO3yWh9mRYArZxocP5hBB1pEGB3bbJYiM-5acc5w","appId":"http://demo.example.com"}'));
@@ -227,8 +229,8 @@ class U2FTest extends \PHPUnit_Framework_TestCase {
   }
 
   /**
-   * @expectedException u2flib_server\Error
-   * @expectedExceptionCode u2flib_server\ERR_NO_MATCHING_REGISTRATION
+   * @expectedException Yubico\Error
+   * @expectedExceptionCode Yubico\ERR_NO_MATCHING_REGISTRATION
    */
   public function testDoAuthenticateWrongReg() {
     $reqs = array(json_decode('{"version":"U2F_V2","challenge":"fEnc9oV79EaBgK5BoNERU5gPKM2XGYWrz4fUjgc0Q7g","keyHandle":"CTUayZo8hCBeC-sGQJChC0wW-bBg99bmOlGCgw8XGq4dLsxO3yWh9mRYArZxocP5hBB1pEGB3bbJYiM-5acc5w","appId":"http://demo.example.com"}'));
@@ -238,8 +240,8 @@ class U2FTest extends \PHPUnit_Framework_TestCase {
   }
 
   /**
-   * @expectedException u2flib_server\Error
-   * @expectedExceptionCode u2flib_server\ERR_PUBKEY_DECODE
+   * @expectedException Yubico\Error
+   * @expectedExceptionCode Yubico\ERR_PUBKEY_DECODE
    */
   public function testDoAuthenticateBadKey() {
     $reqs = array(json_decode('{"version":"U2F_V2","challenge":"fEnc9oV79EaBgK5BoNERU5gPKM2XGYWrz4fUjgc0Q7g","keyHandle":"CTUayZo8hCBeC-sGQJChC0wW-bBg99bmOlGCgw8XGq4dLsxO3yWh9mRYArZxocP5hBB1pEGB3bbJYiM-5acc5w","appId":"http://demo.example.com"}'));
@@ -282,8 +284,8 @@ class U2FTest extends \PHPUnit_Framework_TestCase {
   }
 
   /**
-   * @expectedException u2flib_server\Error
-   * @expectedExceptionCode u2flib_server\ERR_BAD_UA_RETURNING
+   * @expectedException Yubico\Error
+   * @expectedExceptionCode Yubico\ERR_BAD_UA_RETURNING
    */
   public function testDoAuthenticateUAError() {
     $reqs = array(json_decode('{"version":"U2F_V2","challenge":"fEnc9oV79EaBgK5BoNERU5gPKM2XGYWrz4fUjgc0Q7g","keyHandle":"CTUayZo8hCBeC-sGQJChC0wW-bBg99bmOlGCgw8XGq4dLsxO3yWh9mRYArZxocP5hBB1pEGB3bbJYiM-5acc5w","appId":"http://demo.example.com"}'));
