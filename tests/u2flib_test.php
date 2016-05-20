@@ -28,8 +28,6 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-require_once(__DIR__ . '/../vendor/autoload.php');
-
 use Yubico\U2F;
 
 class U2FTest extends \PHPUnit_Framework_TestCase {
