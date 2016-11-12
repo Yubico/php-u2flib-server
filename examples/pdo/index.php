@@ -120,7 +120,7 @@ function updateReg($reg) {
                 var reg = document.getElementById('register2');
                 var user = document.getElementById('username');
                 console.log("Register callback", data);
-                if(data.errorCode && errorCode != 0) {
+                if(data.errorCode && data.errorCode != 0) {
                     alert("registration failed with errror: " + data.errorCode);
                     return;
                 }
