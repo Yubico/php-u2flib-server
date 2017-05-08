@@ -30,6 +30,10 @@
 
 require_once(__DIR__ . '/../src/u2flib_server/U2F.php');
 
+if(class_exists("PHPUnit_Framework_TestCase") == FALSE) {
+  class_alias("\PHPUnit\Framework\TestCase", "PHPUnit_Framework_TestCase");
+}
+
 class U2FTest extends \PHPUnit_Framework_TestCase {
   /** @var u2flib_server\U2F */
   private $u2f;
