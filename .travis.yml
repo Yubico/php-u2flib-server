@@ -4,14 +4,12 @@ php:
   - 7.0
   - 7.1
   - hhvm
-  - hhvm-nightly
 matrix:
   include:
     - php: 5.6
       env: COVERALLS=true
   allow_failures:
     - php: hhvm
-    - php: hhvm-nightly
 
 before_script:
   - composer install
