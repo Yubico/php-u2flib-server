@@ -339,6 +339,10 @@ class U2F
         $signature = substr($signData, 5);
 
         if(openssl_verify($dataToVerify, $signature, $pemKey, 'sha256') === 1) {
+            $upb = unpack("Cupb", substr($signData, 0, 1)); 
+            if($upb['upb'] !== 1) { 
+                throw new Error('User presence byte value is invalid', ERR_BAD_USER_PRESENCE );
+            }
             $ctr = unpack("Nctr", substr($signData, 1, 4));
             $counter = $ctr['ctr'];
             /* TODO: wrap-around should be handled somehow.. */
