@@ -329,13 +329,15 @@ class U2F
     {
         $files = array();
         $dir = $this->attestDir;
-        if($dir && $handle = opendir($dir)) {
+        if(is_dir($dir) && $handle = opendir($dir)) {
             while(false !== ($entry = readdir($handle))) {
                 if(is_file("$dir/$entry")) {
                     $files[] = "$dir/$entry";
                 }
             }
             closedir($handle);
+        } elseif (is_file("$dir")) {
+            $files[] = "$dir";
         }
         return $files;
     }
