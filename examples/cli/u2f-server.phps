@@ -30,9 +30,9 @@
  */
 
 /**
- * This is a basic example of a u2f-server command line that can be used 
+ * This is a basic example of a u2f-server command line that can be used
  * with the u2f-host binary to perform regitrations and authentications.
- */ 
+ */
 
 require_once('../../src/u2flib_server/U2F.php');
 
@@ -43,41 +43,39 @@ $response;
 $result;
 $regs;
 
-if(array_key_exists('r', $options)) {
-  $mode = "register";
-} elseif(array_key_exists('a', $options)) {
-  if(!array_key_exists('R', $options)) {
-    print "a registration must be supplied with -R";
-    exit(1);
-  }
-  $regs = json_decode('[' . $options['R'] . ']');
-  $mode = "authenticate";
+if (array_key_exists('r', $options)) {
+    $mode = "register";
+} elseif (array_key_exists('a', $options)) {
+    if (!array_key_exists('R', $options)) {
+        print "a registration must be supplied with -R";
+        exit(1);
+    }
+    $regs = json_decode('[' . $options['R'] . ']');
+    $mode = "authenticate";
 } else {
-  print "-r or -a must be used\n";
-  exit(1);
+    print "-r or -a must be used\n";
+    exit(1);
 }
-if(!array_key_exists('o', $options)) {
-  print "origin must be supplied with -o\n";
-  exit(1);
+if (!array_key_exists('o', $options)) {
+    print "origin must be supplied with -o\n";
+    exit(1);
 }
 
 $u2f = new u2flib_server\U2F($options['o']);
 
-if($mode === "register") {
-  $challenge = $u2f->getRegisterData();
-} elseif($mode === "authenticate") {
-  $challenge = $u2f->getAuthenticateData($regs);
+if ($mode === "register") {
+    $challenge = $u2f->getRegisterData();
+} elseif ($mode === "authenticate") {
+    $challenge = $u2f->getAuthenticateData($regs);
 }
 
 print json_encode($challenge[0]) . "\n";
 $response = fgets(STDIN);
 
-if($mode === "register") {
-  $result = $u2f->doRegister($challenge[0], json_decode($response));
-} elseif($mode === "authenticate") {
-  $result = $u2f->doAuthenticate($challenge, $regs, json_decode($response));
+if ($mode === "register") {
+    $result = $u2f->doRegister($challenge[0], json_decode($response));
+} elseif ($mode === "authenticate") {
+    $result = $u2f->doAuthenticate($challenge, $regs, json_decode($response));
 }
 
 print json_encode($result) . "\n";
-
-?>

@@ -69,7 +69,8 @@ $u2f = new u2flib_server\U2F($scheme . $_SERVER['HTTP_HOST']);
             localStorage.setItem('u2fregistration', JSON.stringify(data));
         }
         <?php
-        function fixupArray($data) {
+        function fixupArray($data)
+        {
             $ret = array();
             $decoded = json_decode($data);
             foreach ($decoded as $d) {
@@ -77,13 +78,12 @@ $u2f = new u2flib_server\U2F($scheme . $_SERVER['HTTP_HOST']);
             }
             return $ret;
         }
-        if($_SERVER['REQUEST_METHOD'] === 'POST') {
-            if(isset($_POST['startRegister'])) {
+        if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+            if (isset($_POST['startRegister'])) {
                 $regs = json_decode($_POST['registrations']) ? : array();
                 list($data, $reqs) = $u2f->getRegisterData($regs);
                 echo "var request = " . json_encode($data) . ";\n";
-                echo "var signs = " . json_encode($reqs) . ";\n";
-        ?>
+                echo "var signs = " . json_encode($reqs) . ";\n"; ?>
         setTimeout(function() {
             console.log("Register: ", request);
             u2f.register([request], signs, function(data) {
@@ -101,23 +101,21 @@ $u2f = new u2flib_server\U2F($scheme . $_SERVER['HTTP_HOST']);
             });
         }, 1000);
         <?php
-            } else if($_POST['doRegister']) {
+            } elseif ($_POST['doRegister']) {
                 try {
                     $data = $u2f->doRegister(json_decode($_POST['request']), json_decode($_POST['doRegister']));
-                    echo "var registration = '" . json_encode($data) . "';\n";
-        ?>
+                    echo "var registration = '" . json_encode($data) . "';\n"; ?>
         addRegistration(registration);
         alert("registration successful!");
         <?php
-                } catch(u2flib_server\Error $e) {
+                } catch (u2flib_server\Error $e) {
                     echo "alert('error:" . $e->getMessage() . "');\n";
                 }
-            } else if(isset($_POST['startAuthenticate'])) {
+            } elseif (isset($_POST['startAuthenticate'])) {
                 $regs = json_decode($_POST['registrations']);
                 $data = $u2f->getAuthenticateData($regs);
                 echo "var registrations = " . $_POST['registrations'] . ";\n";
-                echo "var request = " . json_encode($data) . ";\n";
-        ?>
+                echo "var request = " . json_encode($data) . ";\n"; ?>
         setTimeout(function() {
             console.log("sign: ", request);
             u2f.sign(request, function(data) {
@@ -133,7 +131,7 @@ $u2f = new u2flib_server\U2F($scheme . $_SERVER['HTTP_HOST']);
             });
         }, 1000);
         <?php
-            } else if($_POST['doAuthenticate']) {
+            } elseif ($_POST['doAuthenticate']) {
                 $reqs = json_decode($_POST['request']);
                 $regs = json_decode($_POST['registrations']);
                 try {
@@ -141,7 +139,7 @@ $u2f = new u2flib_server\U2F($scheme . $_SERVER['HTTP_HOST']);
                     echo "var registration = '" . json_encode($data) . "';\n";
                     echo "addRegistration(registration);\n";
                     echo "alert('Authentication successful, counter:" . $data->counter . "');\n";
-                } catch(u2flib_server\Error $e) {
+                } catch (u2flib_server\Error $e) {
                     echo "alert('error:" . $e->getMessage() . "');\n";
                 }
             }
