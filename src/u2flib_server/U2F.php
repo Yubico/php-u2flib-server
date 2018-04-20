@@ -72,6 +72,11 @@ const ERR_OLD_OPENSSL = 11;
 /** @internal */
 const PUBKEY_LEN = 65;
 
+require_once __DIR__ . '/SignRequest.php';
+require_once __DIR__ . '/Error.php';
+require_once __DIR__ . '/RegisterRequest.php';
+require_once __DIR__ . '/Registration.php';
+
 class U2F
 {
     /** @var string  */
@@ -341,6 +346,19 @@ class U2F
     }
 
     /**
+     * retrieves the challenge from a raw response
+     * @param object $response A response from the authenticator
+     * @return mixed the decoded client data
+     */
+    public function retrieveRawChallengeFromResponse($response)
+    {
+        $clientData = $this->base64u_decode($response->clientData);
+        $cli = json_decode($clientData);
+
+        return $cli->challenge;
+    }
+
+    /**
      * @param string $data
      * @return string
      */
@@ -390,10 +408,13 @@ class U2F
     }
 
     /**
-     * @return string
-     * @throws Error
+     * called to create a challenge. For testing purposes, the U2F class can be inherited,
+     * and this method overridden to always return the same challenge
+     *
+     * @return string the challenge
+     * @throws Error if randomness is not good enough
      */
-    private function createChallenge()
+    protected function createChallenge()
     {
         $challenge = openssl_random_pseudo_bytes(32, $crypto_strong );
         if( $crypto_strong !== true ) {
@@ -417,91 +438,5 @@ class U2F
             $cert[strlen($cert) - 257] = "\0";
         }
         return $cert;
-    }
-}
-
-/**
- * Class for building a registration request
- *
- * @package u2flib_server
- */
-class RegisterRequest
-{
-    /** Protocol version */
-    public $version = U2F_VERSION;
-
-    /** Registration challenge */
-    public $challenge;
-
-    /** Application id */
-    public $appId;
-
-    /**
-     * @param string $challenge
-     * @param string $appId
-     * @internal
-     */
-    public function __construct($challenge, $appId)
-    {
-        $this->challenge = $challenge;
-        $this->appId = $appId;
-    }
-}
-
-/**
- * Class for building up an authentication request
- *
- * @package u2flib_server
- */
-class SignRequest
-{
-    /** Protocol version */
-    public $version = U2F_VERSION;
-
-    /** Authentication challenge */
-    public $challenge;
-
-    /** Key handle of a registered authenticator */
-    public $keyHandle;
-
-    /** Application id */
-    public $appId;
-}
-
-/**
- * Class returned for successful registrations
- *
- * @package u2flib_server
- */
-class Registration
-{
-    /** The key handle of the registered authenticator */
-    public $keyHandle;
-
-    /** The public key of the registered authenticator */
-    public $publicKey;
-
-    /** The attestation certificate of the registered authenticator */
-    public $certificate;
-
-    /** The counter associated with this registration */
-    public $counter = -1;
-}
-
-/**
- * Error class, returned on errors
- *
- * @package u2flib_server
- */
-class Error extends \Exception
-{
-    /**
-     * Override constructor and make message and code mandatory
-     * @param string $message
-     * @param int $code
-     * @param \Exception|null $previous
-     */
-    public function __construct($message, $code, \Exception $previous = null) {
-        parent::__construct($message, $code, $previous);
     }
 }

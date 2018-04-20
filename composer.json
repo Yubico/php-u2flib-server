@@ -1,5 +1,5 @@
 {
-  "name":"yubico/u2flib-server",
+  "name":"ProtonMail/u2flib-server",
   "description":"Library for U2F implementation",
   "homepage":"https://developers.yubico.com/php-u2flib-server",
   "license":"BSD-2-Clause",
