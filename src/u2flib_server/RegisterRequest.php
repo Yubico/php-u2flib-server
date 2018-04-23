@@ -3,7 +3,7 @@
 namespace u2flib_server;
 
 /**
- * Class for building a registration request
+ * Class for building a registration request.
  *
  * @package u2flib_server
  */

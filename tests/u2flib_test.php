@@ -28,7 +28,7 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-require_once(__DIR__ . '/../src/u2flib_server/U2F.php');
+require_once __DIR__ . '/../vendor/autoload.php';
 
 class U2FTest extends \PHPUnit_Framework_TestCase {
   /** @var u2flib_server\U2F */

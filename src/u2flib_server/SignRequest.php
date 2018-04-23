@@ -3,16 +3,16 @@
 namespace u2flib_server;
 
 /**
- * Class for building up an authentication request
+ * Class for building up an authentication request.
  *
  * @package u2flib_server
  */
 class SignRequest
 {
-    /** Protocol version */
+    /** Protocol version. */
     public $version = U2F_VERSION;
 
-    /** Authentication challenge */
+    /** Authentication challenge. */
     public $challenge;
 
     /** Key handle of a registered authenticator */
