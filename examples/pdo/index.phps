@@ -33,7 +33,7 @@
  * registrations. It supports multiple registrations associated with each user.
  */
 
-require_once('../../src/u2flib_server/U2F.php');
+require_once __DIR__ . '/../../vendor/autoload.php';
 
 $dbfile = '/var/tmp/u2f-pdo.sqlite';
 

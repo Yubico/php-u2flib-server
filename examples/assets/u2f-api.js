@@ -271,7 +271,7 @@ u2f.WrappedChromeRuntimePort_.prototype.addEventListener =
 u2f.WrappedAuthenticatorPort_ = function() {
     this.requestId_ = -1;
     this.requestObject_ = null;
-}
+};
 
 /**
  * Launch the Authenticator intent.
