@@ -4,8 +4,6 @@ namespace u2flib_server;
 
 /**
  * Error class, returned on errors
- *
- * @package u2flib_server
  */
 class Error extends \Exception
 {

@@ -4,8 +4,6 @@ namespace u2flib_server;
 
 /**
  * Class for building up an authentication request.
- *
- * @package u2flib_server
  */
 class SignRequest
 {

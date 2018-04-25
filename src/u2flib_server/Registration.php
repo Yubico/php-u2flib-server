@@ -4,8 +4,6 @@ namespace u2flib_server;
 
 /**
  * Class returned for successful registrations.
- *
- * @package u2flib_server
  */
 class Registration
 {
