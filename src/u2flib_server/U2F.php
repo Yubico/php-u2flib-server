@@ -199,7 +199,7 @@ class U2F
         }
         $signature = substr($rawReg, $offs);
 
-        $dataToVerify  = chr(0);
+        $dataToVerify  = pack('C', 0);
         $dataToVerify .= hash('sha256', $request->appId, true);
         $dataToVerify .= hash('sha256', $clientData, true);
         $dataToVerify .= $kh;
@@ -227,6 +227,7 @@ class U2F
             if( !is_object( $reg ) ) {
                 throw new \InvalidArgumentException('$registrations of getAuthenticateData() method only accepts array of object.');
             }
+            /** @var Registration $reg */
 
             $sig = new SignRequest();
             $sig->appId = $this->appId;
@@ -313,13 +314,35 @@ class U2F
             /* TODO: wrap-around should be handled somehow.. */
             if($counter > $reg->counter) {
                 $reg->counter = $counter;
-                return $reg;
+                return self::castObjectToRegistration($reg);
             } else {
                 throw new Error('Counter too low.', ERR_COUNTER_TOO_LOW );
             }
         } else {
             throw new Error('Authentication failed', ERR_AUTHENTICATION_FAILURE );
         }
+    }
+
+    /**
+     * @param object $object
+     * @return Registration
+     */
+    protected static function castObjectToRegistration($object)
+    {
+        $reg = new Registration();
+        if (property_exists($object, 'publicKey')) {
+            $reg->publicKey = $object->publicKey;
+        }
+        if (property_exists($object, 'certificate')) {
+            $reg->certificate = $object->certificate;
+        }
+        if (property_exists($object, 'counter')) {
+            $reg->counter = $object->counter;
+        }
+        if (property_exists($object, 'keyHandle')) {
+            $reg->keyHandle = $object->keyHandle;
+        }
+        return $reg;
     }
 
     /**
@@ -395,11 +418,7 @@ class U2F
      */
     private function createChallenge()
     {
-        $challenge = openssl_random_pseudo_bytes(32, $crypto_strong );
-        if( $crypto_strong !== true ) {
-            throw new Error('Unable to obtain a good source of randomness', ERR_BAD_RANDOM);
-        }
-
+        $challenge = random_bytes(32);
         $challenge = $this->base64u_encode( $challenge );
 
         return $challenge;
@@ -413,7 +432,7 @@ class U2F
      */
     private function fixSignatureUnusedBits($cert)
     {
-        if(in_array(hash('sha256', $cert), $this->FIXCERTS)) {
+        if(in_array(hash('sha256', $cert), $this->FIXCERTS, true)) {
             $cert[strlen($cert) - 257] = "\0";
         }
         return $cert;
@@ -427,13 +446,13 @@ class U2F
  */
 class RegisterRequest
 {
-    /** Protocol version */
+    /** @var string Protocol version */
     public $version = U2F_VERSION;
 
-    /** Registration challenge */
+    /** @var string Registration challenge */
     public $challenge;
 
-    /** Application id */
+    /** @var string Application id */
     public $appId;
 
     /**
@@ -455,17 +474,17 @@ class RegisterRequest
  */
 class SignRequest
 {
-    /** Protocol version */
+    /** @var string Protocol version */
     public $version = U2F_VERSION;
 
-    /** Authentication challenge */
-    public $challenge;
+    /** @var string Authentication challenge */
+    public $challenge = '';
 
-    /** Key handle of a registered authenticator */
-    public $keyHandle;
+    /** @var string Key handle of a registered authenticator */
+    public $keyHandle = '';
 
-    /** Application id */
-    public $appId;
+    /** @var string Application id */
+    public $appId = '';
 }
 
 /**
@@ -475,16 +494,16 @@ class SignRequest
  */
 class Registration
 {
-    /** The key handle of the registered authenticator */
-    public $keyHandle;
+    /** @var string The key handle of the registered authenticator */
+    public $keyHandle = '';
 
-    /** The public key of the registered authenticator */
-    public $publicKey;
+    /** @var string The public key of the registered authenticator */
+    public $publicKey = '';
 
-    /** The attestation certificate of the registered authenticator */
-    public $certificate;
+    /** @var string The attestation certificate of the registered authenticator */
+    public $certificate = '';
 
-    /** The counter associated with this registration */
+    /** @var int The counter associated with this registration */
     public $counter = -1;
 }
 
