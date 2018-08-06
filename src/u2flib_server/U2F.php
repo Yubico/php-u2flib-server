@@ -396,7 +396,7 @@ class U2F
     private function createChallenge()
     {
         $challenge = openssl_random_pseudo_bytes(32, $crypto_strong );
-        if( $crypto_strong !== true ) {
+        if($crypto_strong !== true || $challenge === false) {
             throw new Error('Unable to obtain a good source of randomness', ERR_BAD_RANDOM);
         }
 
