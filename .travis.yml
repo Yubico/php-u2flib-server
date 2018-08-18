@@ -1,11 +1,13 @@
 language: php
 sudo: false
 php:
-  - 7.0
   - 7.1
   - 7.2
   - hhvm
 matrix:
+  include:
+    - php: 7.0
+      env: COVERALLS=true
   allow_failures:
     - php: hhvm
 
