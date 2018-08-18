@@ -7,7 +7,7 @@
     "ext-openssl" :"*",
     "ext-json": "*",
     "php": ">=5.6",
-    "paragonie/random_compat": "^9.99",
+    "paragonie/random_compat": ">=2",
     "paragonie/constant_time_encoding": "^1|^2"
   },
   "autoload": {
