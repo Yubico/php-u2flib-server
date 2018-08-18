@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 /* Copyright (c) 2014 Yubico AB
  * All rights reserved.
  *
@@ -109,7 +111,7 @@ class U2F
      *
      * @throws Error If OpenSSL older than 1.0.0 is used
      */
-    public function __construct($appId, $attestDir = null)
+    public function __construct(string $appId, string $attestDir = null)
     {
         if (OPENSSL_VERSION_NUMBER < 0x10000000) {
             throw new Error(
@@ -135,7 +137,7 @@ class U2F
      *
      * @throws \Exception
      */
-    public function getRegisterData(array $registrations = [])
+    public function getRegisterData(array $registrations = []): array
     {
         $challenge = Utility::createChallenge();
         $request = new RegisterRequest($challenge, $this->appId);
@@ -154,7 +156,7 @@ class U2F
      * @return Registration
      * @throws Error
      */
-    public function doRegister($request, $response, $includeCert = true)
+    public function doRegister($request, $response, $includeCert = true): Registration
     {
         if (!is_object($request)) {
             throw new InvalidArgumentException('$request of doRegister() method only accepts object.');
@@ -252,7 +254,7 @@ class U2F
      * @return array An array of SignRequest
      * @throws \Exception
      */
-    public function getAuthenticateData(array $registrations)
+    public function getAuthenticateData(array $registrations): array
     {
         $sigs = [];
 
@@ -382,7 +384,7 @@ class U2F
     /**
      * @return array
      */
-    private function getCerts()
+    private function getCerts(): array
     {
         $files = [];
         $dir = $this->attestDir;
@@ -404,9 +406,9 @@ class U2F
      * Fixes a certificate where the signature contains unused bits.
      *
      * @param string $cert
-     * @return mixed
+     * @return string
      */
-    private function fixSignatureUnusedBits($cert)
+    private function fixSignatureUnusedBits(string $cert): string
     {
         if (in_array(hash(static::HASH_ALGORITHM, $cert), $this->fixCerts, true)) {
             $cert[strlen($cert) - 257] = "\0";

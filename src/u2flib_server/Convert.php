@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace u2flib_server;
 
 use ParagonIE\ConstantTime\Encoding;
@@ -16,7 +18,7 @@ class Convert
      *
      * @return string
      */
-    public static function base64uEncode($data)
+    public static function base64uEncode(string $data): string
     {
         return trim(strtr(Encoding::base64Encode($data), '+/', '-_'), '=');
     }
@@ -26,7 +28,7 @@ class Convert
      *
      * @return string
      */
-    public static function base64uDecode($data)
+    public static function base64uDecode(string $data): string
     {
         return Encoding::base64Decode(strtr($data, '-_', '+/'));
     }
@@ -39,7 +41,7 @@ class Convert
      *
      * @return null|string
      */
-    public static function pubkeyToPem($key)
+    public static function pubkeyToPem(string $key)
     {
         if (strlen($key) !== PUBKEY_LEN || $key[0] !== "\x04") {
             return null;

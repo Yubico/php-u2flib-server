@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace u2flib_server;
 
 /**
@@ -14,7 +16,7 @@ class Utility
      *
      * @throws \Exception
      */
-    public static function createChallenge()
+    public static function createChallenge(): string
     {
         $challenge = random_bytes(32);
 
