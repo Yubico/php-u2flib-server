@@ -31,10 +31,10 @@
 
 /**
  * This is a basic example of a u2f-server command line that can be used 
- * with the u2f-host binary to perform regitrations and authentications.
- */ 
+ * with the u2f-host binary to perform registrations and authentications.
+ */
 
-require_once('../../src/u2flib_server/U2F.php');
+require_once __DIR__ . '/../../vendor/autoload.php';
 
 $options = getopt("rao:R:");
 $mode;

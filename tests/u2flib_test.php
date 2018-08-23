@@ -28,7 +28,7 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-require_once(__DIR__ . '/../src/u2flib_server/U2F.php');
+require_once __DIR__ . '/../vendor/autoload.php';
 
 class U2FTest extends \PHPUnit_Framework_TestCase {
   /** @var u2flib_server\U2F */
@@ -66,7 +66,7 @@ class U2FTest extends \PHPUnit_Framework_TestCase {
   }
 
   /**
-   * @expectedException u2flib_server\Error
+   * @expectedException \u2flib_server\Error
    * @expectedExceptionCode u2flib_server\ERR_ATTESTATION_VERIFICATION
    */
   public function testDoRegisterAttestFail() {
@@ -77,7 +77,7 @@ class U2FTest extends \PHPUnit_Framework_TestCase {
   }
 
   /**
-   * @expectedException u2flib_server\Error
+   * @expectedException \u2flib_server\Error
    * @expectedExceptionCode u2flib_server\ERR_ATTESTATION_SIGNATURE
    */
   public function testDoRegisterFail2() {
@@ -87,7 +87,7 @@ class U2FTest extends \PHPUnit_Framework_TestCase {
   }
 
   /**
-   * @expectedException u2flib_server\Error
+   * @expectedException \u2flib_server\Error
    * @expectedExceptionCode u2flib_server\ERR_UNMATCHED_CHALLENGE
    */
   public function testDoRegisterFail() {
@@ -117,7 +117,7 @@ class U2FTest extends \PHPUnit_Framework_TestCase {
   }
 
   /**
-   * @expectedException u2flib_server\Error
+   * @expectedException \u2flib_server\Error
    * @expectedExceptionCode u2flib_server\ERR_PUBKEY_DECODE
    */
   public function testDoRegisterBadKeyInCert() {
@@ -127,7 +127,7 @@ class U2FTest extends \PHPUnit_Framework_TestCase {
   }
 
   /**
-   * @expectedException u2flib_server\Error
+   * @expectedException \u2flib_server\Error
    * @expectedExceptionCode u2flib_server\ERR_PUBKEY_DECODE
    */
   public function testDoRegisterBadKey() {
@@ -157,7 +157,7 @@ class U2FTest extends \PHPUnit_Framework_TestCase {
   }
 
   /**
-   * @expectedException u2flib_server\Error
+   * @expectedException \u2flib_server\Error
    * @expectedExceptionCode u2flib_server\ERR_BAD_UA_RETURNING
    */
   public function testDoRegisterUAError() {
@@ -204,7 +204,7 @@ class U2FTest extends \PHPUnit_Framework_TestCase {
   }
 
   /**
-   * @expectedException u2flib_server\Error
+   * @expectedException \u2flib_server\Error
    * @expectedExceptionCode u2flib_server\ERR_COUNTER_TOO_LOW
    */
   public function testDoAuthenticateCtrFail() {
@@ -215,7 +215,7 @@ class U2FTest extends \PHPUnit_Framework_TestCase {
   }
 
   /**
-   * @expectedException u2flib_server\Error
+   * @expectedException \u2flib_server\Error
    * @expectedExceptionCode u2flib_server\ERR_AUTHENTICATION_FAILURE
    */
   public function testDoAuthenticateFail() {
@@ -226,7 +226,7 @@ class U2FTest extends \PHPUnit_Framework_TestCase {
   }
 
   /**
-   * @expectedException u2flib_server\Error
+   * @expectedException \u2flib_server\Error
    * @expectedExceptionCode u2flib_server\ERR_NO_MATCHING_REQUEST
    */
   public function testDoAuthenticateWrongReq() {
@@ -237,7 +237,7 @@ class U2FTest extends \PHPUnit_Framework_TestCase {
   }
 
   /**
-   * @expectedException u2flib_server\Error
+   * @expectedException \u2flib_server\Error
    * @expectedExceptionCode u2flib_server\ERR_NO_MATCHING_REGISTRATION
    */
   public function testDoAuthenticateWrongReg() {
@@ -248,7 +248,7 @@ class U2FTest extends \PHPUnit_Framework_TestCase {
   }
 
   /**
-   * @expectedException u2flib_server\Error
+   * @expectedException \u2flib_server\Error
    * @expectedExceptionCode u2flib_server\ERR_PUBKEY_DECODE
    */
   public function testDoAuthenticateBadKey() {
@@ -292,7 +292,7 @@ class U2FTest extends \PHPUnit_Framework_TestCase {
   }
 
   /**
-   * @expectedException u2flib_server\Error
+   * @expectedException \u2flib_server\Error
    * @expectedExceptionCode u2flib_server\ERR_BAD_UA_RETURNING
    */
   public function testDoAuthenticateUAError() {

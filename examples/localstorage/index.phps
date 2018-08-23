@@ -34,7 +34,7 @@
  * is stored in browser localStorage, so there's nothing real-world
  * about this.
  */
-require_once('../../src/u2flib_server/U2F.php');
+require_once __DIR__ . '/../../vendor/autoload.php';
 $scheme = isset($_SERVER['HTTPS']) ? "https://" : "http://";
 $u2f = new u2flib_server\U2F($scheme . $_SERVER['HTTP_HOST']);
 ?>
