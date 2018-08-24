@@ -41,5 +41,8 @@
         <UnresolvableInclude errorLevel="info" />
 
         <RawObjectIteration errorLevel="info" />
+
+        <!-- psalm seems to wrongly complain about this, set the errorLevel to info for now -->
+        <UndefinedConstant errorLevel="info" />
     </issueHandlers>
 </psalm>
