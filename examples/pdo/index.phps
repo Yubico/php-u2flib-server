@@ -115,7 +115,9 @@ function updateReg($reg) {
         ?>
         setTimeout(function() {
             console.log("Register: ", req);
-            u2f.register([req], sigs, function(data) {
+            var appId = req.appId;
+            var registerRequests = [{version: req.version, challenge: req.challenge, attestation: 'direct'}];
+            u2f.register(appId, registerRequests, [], function(data) {
                 var form = document.getElementById('form');
                 var reg = document.getElementById('register2');
                 var user = document.getElementById('username');
@@ -146,7 +148,13 @@ function updateReg($reg) {
         ?>
         setTimeout(function() {
             console.log("sign: ", req);
-            u2f.sign(req, function(data) {
+            var appId = req[0].appId;
+            var challenge = req[0].challenge;
+
+            console.log("appId: ", appId);
+            console.log("challenge: ", challenge);
+            console.log("registeredKeys: ", req);
+            u2f.sign(appId, challenge, req, function(data) {
                 var form = document.getElementById('form');
                 var auth = document.getElementById('authenticate2');
                 var user = document.getElementById('username');

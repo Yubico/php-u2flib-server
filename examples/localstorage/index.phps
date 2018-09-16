@@ -85,8 +85,10 @@ $u2f = new u2flib_server\U2F($scheme . $_SERVER['HTTP_HOST']);
                 echo "var signs = " . json_encode($reqs) . ";\n";
         ?>
         setTimeout(function() {
+            var appId = request.appId;
+            var registerRequests = [{version: request.version, challenge: request.challenge, attestation: 'direct'}];
             console.log("Register: ", request);
-            u2f.register([request], signs, function(data) {
+            u2f.register(appId, registerRequests, signs, function(data) {
                 var form = document.getElementById('form');
                 var reg = document.getElementById('doRegister');
                 var req = document.getElementById('request');
@@ -120,7 +122,13 @@ $u2f = new u2flib_server\U2F($scheme . $_SERVER['HTTP_HOST']);
         ?>
         setTimeout(function() {
             console.log("sign: ", request);
-            u2f.sign(request, function(data) {
+            var appId = request[0].appId;
+            var challenge = request[0].challenge;
+
+            console.log("appId: ", appId);
+            console.log("challenge: ", challenge);
+            console.log("registeredKeys: ", request);
+            u2f.sign(appId, challenge, request, function(data) {
                 var form = document.getElementById('form');
                 var reg = document.getElementById('doAuthenticate');
                 var req = document.getElementById('request');
