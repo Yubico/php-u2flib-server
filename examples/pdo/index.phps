@@ -78,8 +78,8 @@ function addReg($user_id, $reg) {
 
 function updateReg($reg) {
     global $pdo;
-    $upd = $pdo->prepare("update registrations set counter = ? where id = ?");
-    $upd->execute(array($reg->counter, $reg->id));
+    $upd = $pdo->prepare("update registrations set counter = ? where keyHandle = ?");
+    $upd->execute(array($reg->counter, $reg->keyHandle));
 }
 
 ?>
