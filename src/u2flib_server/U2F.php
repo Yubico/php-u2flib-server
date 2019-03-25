@@ -374,16 +374,16 @@ class U2F
     protected static function castObjectToRegistration($object)
     {
         $reg = new Registration();
-        if (property_exists($object, 'publicKey')) {
+        if (isset($object->publicKey)) {
             $reg->publicKey = $object->publicKey;
         }
-        if (property_exists($object, 'certificate')) {
+        if (isset($object->certificate)) {
             $reg->certificate = $object->certificate;
         }
-        if (property_exists($object, 'counter')) {
+        if (isset($object->counter)) {
             $reg->counter = $object->counter;
         }
-        if (property_exists($object, 'keyHandle')) {
+        if (isset($object->keyHandle)) {
             $reg->keyHandle = $object->keyHandle;
         }
         return $reg;
