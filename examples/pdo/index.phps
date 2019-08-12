@@ -117,12 +117,12 @@ function updateReg($reg) {
             console.log("Register: ", req);
             var appId = req.appId;
             var registerRequests = [{version: req.version, challenge: req.challenge, attestation: 'direct'}];
-            u2f.register(appId, registerRequests, [], function(data) {
+            u2f.register(appId, registerRequests, sigs, function(data) {
                 var form = document.getElementById('form');
                 var reg = document.getElementById('register2');
                 var user = document.getElementById('username');
                 console.log("Register callback", data);
-                if(data.errorCode && errorCode != 0) {
+                if(data.errorCode && data.errorCode != 0) {
                     alert("registration failed with errror: " + data.errorCode);
                     return;
                 }
