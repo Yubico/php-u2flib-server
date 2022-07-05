@@ -1,6 +1,10 @@
 php-u2flib-server
 -----------------
 
+NOTE: _OBSOLETE: This project is no longer maintained.
+U2F has been superseded by https://www.w3.org/TR/webauthn/[Web Authentication].
+We recommend using WebAuthn instead._
+
 image:https://travis-ci.org/Yubico/php-u2flib-server.svg?branch=master["Build Status", link="https://travis-ci.org/Yubico/php-u2flib-server"]
 image:https://coveralls.io/repos/Yubico/php-u2flib-server/badge.svg?branch=master&service=github["Coverage", link="https://coveralls.io/github/Yubico/php-u2flib-server?branch=master"]
 image:https://scrutinizer-ci.com/g/Yubico/php-u2flib-server/badges/quality-score.png?b=master["Scrutinizer Code Quality", link="https://scrutinizer-ci.com/g/Yubico/php-u2flib-server/?branch=master"]
